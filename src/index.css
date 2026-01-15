@@ -1,0 +1,94 @@
+@import url("https://fonts.googleapis.com/css2?family=Baloo+2:wght@400..800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap");
+@import "tailwindcss";
+
+:root {
+	font-family: Poppins, sans-serif;
+	line-height: 1.5;
+	font-weight: 400;
+
+	--color-primary: #222b4c;
+	--color-secondary: #d91e5b;
+	--color-tertiary: #ecd9b9;
+}
+
+@layer utilities {
+	.bg-primary {
+		background-color: var(--color-primary);
+	}
+	.bg-secondary {
+		background-color: var(--color-secondary);
+	}
+	.bg-tertiary {
+		background-color: var(--color-tertiary);
+	}
+	.text-primary {
+		color: var(--color-primary);
+	}
+	.text-secondary {
+		color: var(--color-secondary);
+	}
+	.text-tertiary {
+		color: var(--color-tertiary);
+	}
+	.border-primary {
+		border-color: var(--color-primary);
+	}
+	.border-secondary {
+		border-color: var(--color-secondary);
+	}
+	.border-tertiary {
+		border-color: var(--color-tertiary);
+	}
+	.ring-secondary {
+		--tw-ring-color: var(--color-secondary);
+	}
+
+	/* Line clamp utilities */
+	.line-clamp-1 {
+		display: -webkit-box;
+		-webkit-line-clamp: 1;
+		line-clamp: 1;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+
+	.line-clamp-2 {
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+
+	.line-clamp-3 {
+		display: -webkit-box;
+		-webkit-line-clamp: 3;
+		line-clamp: 3;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+
+	/* Scroll styling */
+	.scrollbar-hide::-webkit-scrollbar {
+		display: none;
+	}
+
+	.scrollbar-hide {
+		-ms-overflow-style: none;
+		scrollbar-width: none;
+	}
+
+	/* Grid utilities for even spacing */
+	.grid-auto-fit {
+		grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+	}
+
+	/* Hover effects */
+	.hover-lift {
+		transition: transform 0.2s ease-in-out;
+	}
+
+	.hover-lift:hover {
+		transform: translateY(-2px);
+	}
+}

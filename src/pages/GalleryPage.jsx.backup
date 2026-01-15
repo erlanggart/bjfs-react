@@ -1,0 +1,187 @@
+import React, { useEffect, useState } from "react";
+import { FiX, FiExternalLink } from "react-icons/fi";
+
+const GalleryPage = () => {
+	const [selectedImage, setSelectedImage] = useState(null);
+	const [images, setImages] = useState([]);
+	const [loading, setLoading] = useState(true);
+	const [error, setError] = useState(null);
+
+	const DRIVE_FOLDER_URL = "https://drive.google.com/drive/folders/1ohFEQW-Ou8XYTsk0DUM87S-tGNU-WF0d";
+
+	useEffect(() => {
+		const url = `/api/public/google_drive_photos.php`;
+
+		const controller = new AbortController();
+		setLoading(true);
+		setError(null);
+
+		fetch(url, { signal: controller.signal })
+			.then((res) => {
+				if (!res.ok) throw new Error("Gagal mengambil data gallery dari server");
+				return res.json();
+			})
+			.then((json) => {
+				if (json && Array.isArray(json.data) && json.data.length > 0) {
+					const mapped = json.data.map((f, idx) => ({
+						id: f.id || `g-${idx}`,
+						// Use backend proxy to avoid CORS issues
+						url: `/api/public/google_drive_image.php?id=${f.id}`,
+						title: f.name || "Foto Bogor Junior",
+						description: "",
+					}));
+					setImages(mapped);
+					setError(null);
+				} else {
+					setError("Tidak ada foto ditemukan");
+				}
+			})
+			.catch((err) => {
+				// Ignore abort errors (normal during HMR or navigation)
+				if (err.name === 'AbortError') {
+					console.log('Gallery fetch was cancelled');
+					return;
+				}
+				console.error("Gallery fetch error:", err.message);
+				setError(err.message);
+			})
+			.finally(() => {
+				setLoading(false);
+			});
+
+		return () => {
+			controller.abort();
+		};
+	}, []);
+
+	const openLightbox = (image) => {
+		setSelectedImage(image);
+		document.body.style.overflow = "hidden";
+	};
+
+	const closeLightbox = () => {
+		setSelectedImage(null);
+		document.body.style.overflow = "auto";
+	};
+
+	return (
+		<div className="min-h-screen bg-gray-50">
+			{/* Hero Section */}
+			<section className="bg-primary text-white py-20">
+				<div className="container mx-auto px-6 text-center">
+					<h1 className="text-4xl md:text-5xl font-bold mb-4" data-aos="fade-up">
+						Galeri Foto
+					</h1>
+					<p className="text-lg md:text-xl text-white/90" data-aos="fade-up" data-aos-delay="100">
+						Kumpulan momen terbaik Bogor Junior Football School
+					</p>
+				</div>
+			</section>
+
+			{/* Gallery Content */}
+			<section className="py-16">
+				<div className="container mx-auto px-6">
+					{/* Action Buttons */}
+					<div className="flex justify-center mb-8 gap-4">
+						<a
+							href={DRIVE_FOLDER_URL}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="inline-flex items-center gap-2 bg-primary text-white font-semibold px-6 py-3 rounded-lg shadow-lg hover:opacity-90 transition-all hover:scale-105"
+							data-aos="fade-up"
+						>
+							<FiExternalLink size={20} />
+							Buka di Google Drive
+						</a>
+					</div>
+
+					{/* Loading State */}
+					{loading && (
+						<div className="text-center py-20">
+							<div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
+							<p className="text-gray-600">Memuat foto dari Google Drive...</p>
+						</div>
+					)}
+
+					{/* Error State */}
+					{error && !loading && (
+						<div className="text-center py-20">
+							<p className="text-red-600 mb-4">⚠️ {error}</p>
+							<a
+								href={DRIVE_FOLDER_URL}
+								target="_blank"
+								rel="noopener noreferrer"
+								className="text-primary hover:underline"
+							>
+								Lihat langsung di Google Drive →
+							</a>
+						</div>
+					)}
+
+					{/* Gallery Grid */}
+					{!loading && !error && images.length > 0 && (
+						<>
+							<p className="text-center text-gray-600 mb-8" data-aos="fade-up">
+								Menampilkan {images.length} foto
+							</p>
+							<div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" data-aos="zoom-in">
+								{images.map((image, index) => (
+									<div
+										key={image.id}
+										className="rounded-xl overflow-hidden group relative cursor-pointer aspect-square"
+										onClick={() => openLightbox(image)}
+										data-aos="fade-up"
+										data-aos-delay={Math.min(index * 20, 300)}
+									>
+										<img
+											src={image.url}
+											alt={image.title}
+											className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
+											loading="lazy"
+										/>
+										<div className="absolute inset-0 bg-black/0 group-hover:bg-black/50 transition-all duration-300 flex items-center justify-center">
+											<p className="text-white font-semibold opacity-0 group-hover:opacity-100 transition-opacity px-2 text-center text-sm">
+												{image.title}
+											</p>
+										</div>
+									</div>
+								))}
+							</div>
+						</>
+					)}
+				</div>
+			</section>
+
+			{/* Lightbox Modal */}
+			{selectedImage && (
+				<div
+					className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4"
+					onClick={closeLightbox}
+				>
+					<button
+						className="absolute top-4 right-4 text-white hover:text-gray-300 transition-colors z-10"
+						onClick={closeLightbox}
+						aria-label="Close"
+					>
+						<FiX size={32} />
+					</button>
+					<div
+						className="max-w-6xl max-h-[90vh] relative"
+						onClick={(e) => e.stopPropagation()}
+					>
+						<img
+							src={selectedImage.url}
+							alt={selectedImage.title}
+							className="max-w-full max-h-[85vh] object-contain rounded-lg"
+						/>
+						<div className="text-center mt-4 text-white">
+							<h3 className="text-xl font-bold">{selectedImage.title}</h3>
+						</div>
+					</div>
+				</div>
+			)}
+		</div>
+	);
+};
+
+export default GalleryPage;
