@@ -1,7 +1,7 @@
 // File: src/pages/LandingPage.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
+import api from "../services/api"; // Use configured axios instance
 import AOS from "aos";
 import "aos/dist/aos.css"; // Impor CSS untuk AOS
 import {
@@ -155,8 +155,8 @@ const LandingPage = () => {
 		const fetchData = async () => {
 			try {
 				const [branchRes, heroRes] = await Promise.all([
-					axios.get("/api/public/branches"),
-					axios.get("/api/public/hero_gallery")
+					api.get("/api/public/branches"),
+					api.get("/api/public/hero_gallery")
 				]);
 
 				const branchData = branchRes.data;
