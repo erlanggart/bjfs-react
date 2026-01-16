@@ -25,10 +25,12 @@ const SEO = ({
   const metaDescription = description || defaultDescription;
   const metaKeywords = keywords || defaultKeywords;
 
-  // Temporary: Use vanilla JS for meta tags until react-helmet-async is updated
+  // Use vanilla JS for meta tags (react-helmet-async removed for React 19 compatibility)
   useEffect(() => {
+    // Set page title
     document.title = metaTitle;
     
+    // Helper to set meta tags by name
     const setMetaTag = (name, content) => {
       let element = document.querySelector(`meta[name="${name}"]`);
       if (!element) {
@@ -39,6 +41,7 @@ const SEO = ({
       element.setAttribute('content', content);
     };
 
+    // Helper to set meta tags by property (for Open Graph)
     const setPropertyTag = (property, content) => {
       let element = document.querySelector(`meta[property="${property}"]`);
       if (!element) {
@@ -49,118 +52,28 @@ const SEO = ({
       element.setAttribute('content', content);
     };
 
+    // Set basic meta tags
     setMetaTag('description', metaDescription);
     setMetaTag('keywords', metaKeywords);
+    setMetaTag('author', author);
+
+    // Set Open Graph meta tags
+    setPropertyTag('og:type', type);
     setPropertyTag('og:title', metaTitle);
     setPropertyTag('og:description', metaDescription);
     setPropertyTag('og:url', fullUrl);
     setPropertyTag('og:image', fullImage);
-  }, [metaTitle, metaDescription, metaKeywords, fullUrl, fullImage]);
+    setPropertyTag('og:site_name', siteTitle);
+    
+    // Set Twitter Card meta tags
+    setMetaTag('twitter:card', 'summary_large_image');
+    setMetaTag('twitter:title', metaTitle);
+    setMetaTag('twitter:description', metaDescription);
+    setMetaTag('twitter:image', fullImage);
+  }, [metaTitle, metaDescription, metaKeywords, fullUrl, fullImage, author, type]);
 
+  // Component doesn't render anything, just manages meta tags
   return null;
-  
-  /* Original Helmet code - will be restored after dependency update
-  return (
-    <Helmet>
-      {/* Primary Meta Tags */}
-      <title>{metaTitle}</title>
-      <meta name="title" content={metaTitle} />
-      <meta name="description" content={metaDescription} />
-      <meta name="keywords" content={metaKeywords} />
-      <meta name="author" content={author} />
-      <link rel="canonical" href={fullUrl} />
-
-      {/* Open Graph / Facebook */}
-      <meta property="og:type" content={type} />
-      <meta property="og:url" content={fullUrl} />
-      <meta property="og:title" content={metaTitle} />
-      <meta property="og:description" content={metaDescription} />
-      <meta property="og:image" content={fullImage} />
-      <meta property="og:site_name" content={siteTitle} />
-      <meta property="og:locale" content="id_ID" />
-
-      {/* Article specific meta tags */}
-      {article && (
-        <>
-          <meta property="article:published_time" content={article.publishedTime} />
-          <meta property="article:modified_time" content={article.modifiedTime} />
-          <meta property="article:author" content={article.author} />
-          <meta property="article:section" content={article.category || 'Berita'} />
-          {article.tags && article.tags.map((tag, index) => (
-            <meta property="article:tag" content={tag} key={index} />
-          ))}
-        </>
-      )}
-
-      {/* Twitter */}
-      <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:url" content={fullUrl} />
-      <meta name="twitter:title" content={metaTitle} />
-      <meta name="twitter:description" content={metaDescription} />
-      <meta name="twitter:image" content={fullImage} />
-
-      {/* Additional SEO tags */}
-      <meta name="robots" content="index, follow" />
-      <meta name="language" content="Indonesian" />
-      <meta name="revisit-after" content="7 days" />
-      <meta name="rating" content="general" />
-      <meta httpEquiv="Content-Type" content="text/html; charset=utf-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-      {/* Structured Data - JSON-LD */}
-      {article ? (
-        <script type="application/ld+json">
-          {JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'Article',
-            headline: title,
-            description: metaDescription,
-            image: fullImage,
-            datePublished: article.publishedTime,
-            dateModified: article.modifiedTime,
-            author: {
-              '@type': 'Person',
-              name: article.author,
-            },
-            publisher: {
-              '@type': 'Organization',
-              name: siteTitle,
-              logo: {
-                '@type': 'ImageObject',
-                url: `${siteUrl}/logo.png`,
-              },
-            },
-            mainEntityOfPage: {
-              '@type': 'WebPage',
-              '@id': fullUrl,
-            },
-          })}
-        </script>
-      ) : type === 'website' ? (
-        <script type="application/ld+json">
-          {JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'Organization',
-            name: siteTitle,
-            description: metaDescription,
-            url: siteUrl,
-            logo: `${siteUrl}/logo.png`,
-            sameAs: [
-              'https://www.facebook.com/bogorjuniorfs',
-              'https://www.instagram.com/bogorjuniorfs',
-              'https://www.youtube.com/@bogorjuniorfs',
-            ],
-            contactPoint: {
-              '@type': 'ContactPoint',
-              contactType: 'Customer Service',
-              email: 'info@bogorjuniorfs.com',
-            },
-          })}
-        </script>
-      ) : null}
-    </Helmet>
-  );
-  */
 };
 
 SEO.propTypes = {
