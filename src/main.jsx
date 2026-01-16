@@ -3,7 +3,7 @@ import { createRoot } from "react-dom/client";
 import "./index.css";
 import App from "./App.jsx";
 import axios from "axios"; // 1. Import axios
-import { HelmetProvider } from "react-helmet-async";
+// import { HelmetProvider } from "react-helmet-async"; // Temporarily disabled
 
 // 2. KONFIGURASI GLOBAL AXIOS
 // Atur agar Axios selalu mengirim cookie di setiap request.
@@ -24,8 +24,8 @@ axios.interceptors.request.use(
 
 createRoot(document.getElementById("root")).render(
 	<StrictMode>
-		<HelmetProvider>
+		{/* <HelmetProvider> */}
 			<App />
-		</HelmetProvider>
+		{/* </HelmetProvider> */}
 	</StrictMode>
 );

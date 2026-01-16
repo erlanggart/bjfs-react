@@ -1,5 +1,6 @@
-import { Helmet } from 'react-helmet-async';
+// import { Helmet } from 'react-helmet-async'; // Temporarily disabled
 import PropTypes from 'prop-types';
+import { useEffect } from 'react';
 
 const SEO = ({
   title,
@@ -24,6 +25,41 @@ const SEO = ({
   const metaDescription = description || defaultDescription;
   const metaKeywords = keywords || defaultKeywords;
 
+  // Temporary: Use vanilla JS for meta tags until react-helmet-async is updated
+  useEffect(() => {
+    document.title = metaTitle;
+    
+    const setMetaTag = (name, content) => {
+      let element = document.querySelector(`meta[name="${name}"]`);
+      if (!element) {
+        element = document.createElement('meta');
+        element.setAttribute('name', name);
+        document.head.appendChild(element);
+      }
+      element.setAttribute('content', content);
+    };
+
+    const setPropertyTag = (property, content) => {
+      let element = document.querySelector(`meta[property="${property}"]`);
+      if (!element) {
+        element = document.createElement('meta');
+        element.setAttribute('property', property);
+        document.head.appendChild(element);
+      }
+      element.setAttribute('content', content);
+    };
+
+    setMetaTag('description', metaDescription);
+    setMetaTag('keywords', metaKeywords);
+    setPropertyTag('og:title', metaTitle);
+    setPropertyTag('og:description', metaDescription);
+    setPropertyTag('og:url', fullUrl);
+    setPropertyTag('og:image', fullImage);
+  }, [metaTitle, metaDescription, metaKeywords, fullUrl, fullImage]);
+
+  return null;
+  
+  /* Original Helmet code - will be restored after dependency update
   return (
     <Helmet>
       {/* Primary Meta Tags */}
@@ -124,6 +160,7 @@ const SEO = ({
       ) : null}
     </Helmet>
   );
+  */
 };
 
 SEO.propTypes = {
