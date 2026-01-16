@@ -86,7 +86,7 @@ const MemberGrowthChartWidget = () => {
 
 	useEffect(() => {
 		axios
-			.get("/api/admin/dashboard_member_count_chart.php")
+			.get("/api/admin/dashboard-member-count-chart")
 			.then((res) => setChartData(res.data))
 			.catch((err) =>
 				console.error("Gagal memuat data grafik pertumbuhan member", err)

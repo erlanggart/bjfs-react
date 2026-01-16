@@ -459,7 +459,7 @@ const AddAchievementForm = ({ refetch }) => {
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		try {
-			await axios.post("/api/members/add_achievement.php", {
+			await axios.post("/api/members/achievements", {
 				achievement_name: name,
 				event_date: date,
 				notes: notes,
@@ -562,18 +562,20 @@ const ProfileSettingsPage = () => {
 
 	const fetchProfile = async () => {
 		try {
-			const requests = [axios.get("/api/users/my_profile.php")];
+			const requests = [axios.get("/api/users/my-profile")];
 
 			// Tambahkan request sesuai role
 			if (user.role === "member") {
-				requests.push(axios.get("/api/members/my_achievements.php"));
+				requests.push(axios.get("/api/members/my-achievements"));
 			} else if (user.role === "admin_cabang") {
 				requests.push(axios.get("/api/branch_admins/my_competencies.php"));
 			}
 
 			const responses = await Promise.all(requests);
 
-			setProfile(responses[0].data);
+			// Backend returns { success: true, profile: {...} }
+			const profileData = responses[0].data.profile;
+			setProfile(profileData);
 
 			if (user.role === "member") {
 				setAchievements(responses[1]?.data || []);
@@ -581,17 +583,17 @@ const ProfileSettingsPage = () => {
 				setCompetencies(responses[1]?.data || []);
 			}
 
-			setUsername(responses[0].data.username || "");
-			setFullName(responses[0].data.full_name || "");
-			setPhoneNumber(responses[0].data.phone_number || "");
-			setDateOfBirth(responses[0].data.date_of_birth || "");
-			setAddress(responses[0].data.address || "");
+			setUsername(profileData.username || "");
+			setFullName(profileData.full_name || "");
+			setPhoneNumber(profileData.phone_number || "");
+			setDateOfBirth(profileData.date_of_birth || "");
+			setAddress(profileData.address || "");
 			setRegistrationDate(
-				responses[0].data.registration_date
-					? responses[0].data.registration_date.split(" ")[0]
+				profileData.registration_date
+					? profileData.registration_date.split(" ")[0]
 					: ""
 			);
-			setAvatarPreview(responses[0].data.avatar);
+			setAvatarPreview(profileData.avatar);
 		} catch (error) {
 			Swal.fire("Error", "Gagal memuat data profil.", "error");
 		} finally {
@@ -633,7 +635,7 @@ const ProfileSettingsPage = () => {
 		}
 
 		try {
-			await axios.post("/api/members/upload_documents.php", formData, {
+			await axios.post("/api/members/upload-documents", formData, {
 				headers: { "Content-Type": "multipart/form-data" },
 			});
 			Swal.fire("Sukses", "Dokumen Anda berhasil diunggah!", "success");
@@ -659,7 +661,7 @@ const ProfileSettingsPage = () => {
 		}).then(async (result) => {
 			if (result.isConfirmed) {
 				try {
-					await axios.post("/api/members/delete_document.php", {
+					await axios.delete("/api/members/delete-document", {
 						doc_type: docType,
 					});
 					Swal.fire("Dihapus!", "Dokumen telah berhasil dihapus.", "success");
@@ -709,7 +711,7 @@ const ProfileSettingsPage = () => {
 	const handleProfileUpdate = async (e) => {
 		e.preventDefault();
 		try {
-			await axios.post("/api/users/update_profile.php", {
+			await axios.put("/api/users/update-profile", {
 				username: username,
 				full_name: fullName,
 				phone_number: phoneNumber,
@@ -809,8 +811,7 @@ const ProfileSettingsPage = () => {
 
 	const handleUpdateAchievement = async (id, data) => {
 		try {
-			await axios.post("/api/members/update_achievement.php", {
-				id: id,
+			await axios.put(`/api/members/achievements/${id}`, {
 				achievement_name: data.name,
 				event_date: data.date,
 				notes: data.notes,
@@ -832,7 +833,7 @@ const ProfileSettingsPage = () => {
 		}).then(async (result) => {
 			if (result.isConfirmed) {
 				try {
-					await axios.post("/api/members/delete_achievement.php", { id: id });
+					await axios.delete(`/api/members/achievements/${id}`);
 					Swal.fire("Dihapus!", "Prestasi telah dihapus.", "success");
 					triggerRefetch();
 				} catch (err) {

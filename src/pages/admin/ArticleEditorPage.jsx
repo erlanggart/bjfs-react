@@ -50,7 +50,7 @@ const ArticleEditorPage = () => {
 
 				try {
 					const response = await axios.post(
-						"/api/admin/articles/upload_image.php",
+						"/api/admin/articles/upload-image",
 						formData,
 						{
 							headers: { "Content-Type": "multipart/form-data" },
@@ -109,11 +109,11 @@ const ArticleEditorPage = () => {
 		if (isEditMode) {
 			setLoading(true);
 			axios
-				.get(`/api/admin/articles/detail.php?id=${id}`)
+				.get(`/api/admin/articles/${id}`)
 				.then((res) => {
-					setTitle(res.data.title);
-					setContent(res.data.content);
-					setThumbnailPreview(res.data.thumbnail_url);
+					setTitle(res.data.article.title);
+					setContent(res.data.article.content);
+					setThumbnailPreview(res.data.article.thumbnail_url);
 				})
 				.catch(() => Swal.fire("Error", "Gagal memuat data artikel.", "error"))
 				.finally(() => setLoading(false));
@@ -137,14 +137,16 @@ const ArticleEditorPage = () => {
 			formData.append("id", id);
 		}
 
-		const url = isEditMode
-			? "/api/admin/articles/update.php"
-			: "/api/admin/articles/create.php";
-
 		try {
-			await axios.post(url, formData, {
-				headers: { "Content-Type": "multipart/form-data" },
-			});
+			if (isEditMode) {
+				await axios.put(`/api/admin/articles/${id}`, formData, {
+					headers: { "Content-Type": "multipart/form-data" },
+				});
+			} else {
+				await axios.post("/api/admin/articles", formData, {
+					headers: { "Content-Type": "multipart/form-data" },
+				});
+			}
 			Swal.fire(
 				"Berhasil!",
 				`Artikel telah ${isEditMode ? "diperbarui" : "dibuat"}.`,

@@ -15,7 +15,7 @@ const UserLoginStatsModal = ({ isOpen, onClose, userId }) => {
 			setLoading(true);
 			setError("");
 			try {
-				const response = await axios.get(`/api/admin/user_login_stats.php?user_id=${userId}`);
+				const response = await axios.get(`/api/admin/user-login-stats?user_id=${userId}`);
 				setStats(response.data);
 			} catch (err) {
 				setError("Gagal memuat statistik login.");

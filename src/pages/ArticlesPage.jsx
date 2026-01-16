@@ -53,7 +53,7 @@ const ArticlesPage = () => {
 	const fetchArticles = useCallback(async (currentPage, search) => {
 		setLoading(true);
 		try {
-			const response = await axios.get("/api/public/list_articles.php", {
+			const response = await axios.get("/api/public/articles/list", {
 				params: { page: currentPage, search: search },
 			});
 			const data = response.data;

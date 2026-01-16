@@ -533,7 +533,7 @@ const AdminUploadPaymentModal = ({
 		formData.append("payment_date", paymentDate); // Tambahkan tanggal ke data
 
 		try {
-			await axios.post("/api/admin/upload_payment_for_member.php", formData, {
+			await axios.post("/api/admin/upload-payment-for-member", formData, {
 				headers: { "Content-Type": "multipart/form-data" },
 			});
 			Swal.fire(
@@ -662,7 +662,7 @@ const PaymentHistory = ({ memberId, refetchParent }) => {
 		}).then(async (result) => {
 			if (result.isConfirmed) {
 				try {
-					await axios.post("/api/admin/verify_payment.php", {
+					await axios.post("/api/admin/verify-payment", {
 						proof_id: proofId,
 						status: newStatus,
 					});
@@ -1025,7 +1025,7 @@ const MemberDetailPage = () => {
 		}).then(async (result) => {
 			if (result.isConfirmed) {
 				try {
-					await axios.post("/api/admin/verify_payment.php", {
+					await axios.post("/api/admin/verify-payment", {
 						proof_id: proofId,
 						status: newStatus,
 					});

@@ -14,7 +14,7 @@ const CoachProfilesSection = () => {
 		const fetchCoaches = async () => {
 			try {
 				const response = await axios.get(
-					`/api/public/branch_admin_profiles.php`
+					`/api/public/branch_admin_profiles`
 				);
 				setCoaches(response.data);
 			} catch (error) {

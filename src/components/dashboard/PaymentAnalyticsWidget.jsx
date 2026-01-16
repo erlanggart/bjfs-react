@@ -291,7 +291,7 @@ const PaymentAnalyticsWidget = () => {
 
 	const fetchData = useCallback(() => {
 		axios
-			.get("/api/admin/dashboard_payment_data.php", { params: { month, year } })
+			.get("/api/admin/dashboard-payment-data", { params: { month, year } })
 			.then((res) => {
 				setStats(res.data.payment_stats || []);
 				setPendingPayments(res.data.pending_payments || []);

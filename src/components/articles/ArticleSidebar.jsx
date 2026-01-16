@@ -11,7 +11,7 @@ const ArticleSidebar = ({ currentArticleId }) => {
 			try {
 				// Panggil API sidebar dengan parameter exclude_id
 				const response = await axios.get(
-					`/api/public/articles/list_sidebar.php?exclude_id=${currentArticleId}`
+					`/api/public/articles/list_sidebar?exclude_id=${currentArticleId}`
 				);
 				setArticles(response.data);
 			} catch (error) {

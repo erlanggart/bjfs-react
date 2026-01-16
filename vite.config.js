@@ -11,8 +11,8 @@ export default defineConfig({
 		proxy: {
 			// Proxy API requests to backend
 			"/api": {
-				// Use bogorjunior-backend (Docker container name in same network)
-				target: "http://bogorjunior-backend:80",
+				// Use localhost for local development (without Docker)
+				target: "http://localhost:3000",
 				changeOrigin: true,
 				secure: false,
 			},

@@ -14,8 +14,8 @@ const BranchesWithCoachesSection = () => {
 			try {
 				// Ambil data branches dan coaches secara paralel
 				const [branchesResponse, coachesResponse] = await Promise.all([
-					axios.get("/api/public/list_branches.php"),
-					axios.get("/api/public/branch_admin_profiles.php"),
+					axios.get("/api/public/branches"),
+					axios.get("/api/public/branch_admin_profiles"),
 				]);
 
 				const branches = branchesResponse.data;

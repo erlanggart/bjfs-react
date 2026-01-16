@@ -183,7 +183,7 @@ const MatchDetailPage = () => {
 
 	useEffect(() => {
 		axios
-			.get(`/api/public/get_match_detail.php?id=${id}`)
+			.get(`/api/matches/public/${id}`)
 			.then((res) => setData(res.data))
 			.catch((err) => console.error("Gagal memuat detail pertandingan", err))
 			.finally(() => setLoading(false));

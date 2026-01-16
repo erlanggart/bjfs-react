@@ -101,6 +101,8 @@ const PaymentPage = () => {
 	const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 	const [refreshKey, setRefreshKey] = useState(0);
 	const [paymentStatus, setPaymentStatus] = useState({ show: false });
+	
+	const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
 	// BARU: Fungsi untuk menangani pengiriman kritik dan saran
 
@@ -311,7 +313,7 @@ const PaymentPage = () => {
 										<StatusBadge status={item.status} />
 										{item.proof_url && (
 											<a
-												href={`${item.proof_url}`}
+												href={`${API_URL}${item.proof_url}`}
 												target="_blank"
 												rel="noopener noreferrer"
 												className="flex items-center gap-1 px-3 py-1 bg-blue-500 text-white text-xs rounded-lg hover:bg-blue-600 transition-colors"

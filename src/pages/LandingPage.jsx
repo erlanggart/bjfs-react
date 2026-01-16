@@ -155,8 +155,8 @@ const LandingPage = () => {
 		const fetchData = async () => {
 			try {
 				const [branchRes, heroRes] = await Promise.all([
-					axios.get("/api/public/list_branches.php"),
-					axios.get("/api/public/list_hero_gallery.php")
+					axios.get("/api/public/branches"),
+					axios.get("/api/public/hero_gallery")
 				]);
 
 				const branchData = branchRes.data;

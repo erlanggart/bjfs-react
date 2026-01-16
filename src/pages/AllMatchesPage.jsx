@@ -41,7 +41,7 @@ const AllMatchesPage = () => {
 		const fetchAllMatches = async () => {
 			try {
 				// Panggil API tanpa limit untuk mendapatkan semua data
-				const response = await axios.get("/api/public/list_matches.php");
+				const response = await axios.get("/api/matches/public");
 				setMatches(response.data);
 			} catch (error) {
 				console.error("Gagal memuat semua pertandingan", error);

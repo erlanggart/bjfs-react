@@ -12,9 +12,9 @@ const ArticleManagementPage = () => {
 	const fetchArticles = useCallback(async () => {
 		setLoading(true);
 		try {
-			const response = await axios.get("/api/admin/articles/list.php");
-			setArticles(response.data);
-		} catch (error) {
+			const response = await axios.get("/api/admin/articles");
+			setArticles(response.data.articles);
+		} catch  {
 			Swal.fire("Error", "Gagal memuat daftar artikel.", "error");
 		} finally {
 			setLoading(false);
@@ -36,10 +36,10 @@ const ArticleManagementPage = () => {
 		}).then(async (result) => {
 			if (result.isConfirmed) {
 				try {
-					await axios.post("/api/admin/articles/delete.php", { id: articleId });
+					await axios.delete(`/api/admin/articles/${articleId}`);
 					Swal.fire("Dihapus!", "Artikel telah berhasil dihapus.", "success");
 					fetchArticles();
-				} catch (err) {
+				} catch  {
 					Swal.fire("Gagal!", "Gagal menghapus artikel.", "error");
 				}
 			}

@@ -32,7 +32,7 @@ const UserManagementPage = () => {
 		setLoading(true);
 		setError("");
 		try {
-			const response = await axios.get("/api/admin/users.php", {
+			const response = await axios.get("/api/admin/users", {
 				params: {
 					role: activeTab,
 					page: currentPage,

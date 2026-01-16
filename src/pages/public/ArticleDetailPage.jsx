@@ -26,7 +26,7 @@ const ArticleDetailPage = () => {
 				setLoading(true);
 				setError(""); // Reset error setiap kali ID berubah
 				const response = await axios.get(
-					`/api/public/articles/detail.php?id=${id}`
+					`/api/public/articles/detail/${id}`
 				);
 				setArticle(response.data);
 				window.scrollTo(0, 0); // Scroll ke atas halaman saat artikel baru dimuat

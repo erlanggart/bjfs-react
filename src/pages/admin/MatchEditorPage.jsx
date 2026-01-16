@@ -12,7 +12,7 @@ const SearchableMemberSelect = ({ value, onChange }) => {
 		setTimeout(async () => {
 			try {
 				const response = await axios.get(
-					"/api/admin/matches/list_members_for_lineup.php",
+					"/api/matches/members/for-lineup",
 					{ params: { search: inputValue } }
 				);
 				const options = response.data.map((member) => ({
@@ -156,7 +156,7 @@ const MatchEditorPage = () => {
 	useEffect(() => {
 		if (isEditMode) {
 			axios
-				.get(`/api/admin/matches/detail.php?id=${id}`)
+				.get(`/api/matches/${id}`)
 				.then((res) => {
 					// ================================================
 					// --- TAMBAHKAN DEBUG DI SINI ---
@@ -259,11 +259,12 @@ const MatchEditorPage = () => {
 		}
 
 		const url = isEditMode
-			? "/api/admin/matches/update.php"
-			: "/api/admin/matches/create.php";
+			? "/api/matches"
+			: "/api/matches";
 
 		try {
-			await axios.post(url, data, {
+			const method = isEditMode ? "put" : "post";
+			await axios[method](url, data, {
 				headers: { "Content-Type": "multipart/form-data" },
 			});
 			Swal.fire(

@@ -21,8 +21,8 @@ const BranchSchedulePage = () => {
 			setLoading(true);
 			// Fetch branches and schedules
 			const [branchesRes, schedulesRes] = await Promise.all([
-				axios.get("/api/public/list_branches.php"),
-				axios.get("/api/public/list_schedules.php"),
+				axios.get("/api/public/branches"),
+				axios.get("/api/public/schedules"),
 			]);
 
 			const branchesData = branchesRes.data;

@@ -5,6 +5,9 @@ import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useAuth } from "../context/AuthContext";
 
+// Track if we're already showing the session expired alert
+let isShowingAlert = false;
+
 const AxiosInterceptor = ({ children }) => {
 	const navigate = useNavigate();
 	const { logout } = useAuth();
@@ -16,13 +19,14 @@ const AxiosInterceptor = ({ children }) => {
 				const { config, response } = error;
 				const originalRequestUrl = config.url;
 
-				// PERBAIKAN: Cek jika error adalah 401 DAN BUKAN dari API login
+				// Handle 401 errors (except from login endpoint)
 				if (
 					response &&
 					response.status === 401 &&
-					originalRequestUrl !== "/api/auth/login.php"
+					originalRequestUrl !== "/api/auth/login" &&
+					!isShowingAlert // Prevent multiple alerts
 				) {
-					// Hanya jalankan logout dan notifikasi jika error BUKAN dari login
+					isShowingAlert = true;
 					logout();
 
 					Swal.fire({
@@ -31,11 +35,22 @@ const AxiosInterceptor = ({ children }) => {
 						icon: "warning",
 						confirmButtonText: "Login",
 					}).then(() => {
+						isShowingAlert = false;
 						navigate("/login");
 					});
 				}
 
-				// Selalu kembalikan error agar bisa ditangani oleh komponen pemanggil (seperti LoginPage)
+				// Handle 429 (Too Many Requests)
+				if (response && response.status === 429) {
+					Swal.fire({
+						title: "Terlalu Banyak Permintaan",
+						text: response.data?.message || "Silakan tunggu beberapa saat sebelum mencoba lagi.",
+						icon: "warning",
+						confirmButtonText: "OK",
+					});
+				}
+
+				// Selalu kembalikan error agar bisa ditangani oleh komponen pemanggil
 				return Promise.reject(error);
 			}
 		);

@@ -10,6 +10,18 @@ import { HelmetProvider } from "react-helmet-async";
 // Ini adalah kunci untuk menyelesaikan masalah refresh.
 axios.defaults.withCredentials = true;
 
+// Add interceptor to include token from localStorage
+axios.interceptors.request.use(
+	(config) => {
+		const token = localStorage.getItem('auth_token');
+		if (token) {
+			config.headers.Authorization = `Bearer ${token}`;
+		}
+		return config;
+	},
+	(error) => Promise.reject(error)
+);
+
 createRoot(document.getElementById("root")).render(
 	<StrictMode>
 		<HelmetProvider>

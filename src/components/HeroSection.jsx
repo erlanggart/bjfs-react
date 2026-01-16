@@ -92,7 +92,7 @@ const HeroSection = ({ heroImages, scrollToSection }) => {
 							Coba Trial Gratis
 						</a>
 						<button
-							onClick={() => scrollToSection('branches')}
+							onClick={() => scrollToSection('cabang')}
 							className="flex items-center gap-2 bg-primary text-white font-bold px-8 py-3 rounded-lg shadow-lg hover:opacity-90 transition-transform hover:scale-105"
 						>
 							<FiMapPin size={20} />

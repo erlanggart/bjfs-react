@@ -12,8 +12,8 @@ const MatchManagementPage = () => {
 	const fetchMatches = useCallback(async () => {
 		setLoading(true);
 		try {
-			// Gunakan parameter ?all=true untuk mendapatkan semua data
-			const response = await axios.get("/api/public/list_matches.php?all=true");
+			// Gunakan endpoint admin untuk mendapatkan semua data
+			const response = await axios.get("/api/matches");
 			setMatches(response.data);
 		} catch (error) {
 			console.error("Gagal memuat pertandingan", error);
@@ -39,7 +39,7 @@ const MatchManagementPage = () => {
 		}).then(async (result) => {
 			if (result.isConfirmed) {
 				try {
-					await axios.post("/api/admin/matches/delete.php", { id: match.id });
+						await axios.delete(`/api/matches/${match.id}`);
 					Swal.fire("Terhapus!", "Data pertandingan telah dihapus.", "success");
 					fetchMatches(); // Muat ulang daftar setelah berhasil menghapus
 				} catch (error) {

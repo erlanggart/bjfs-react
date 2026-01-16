@@ -17,7 +17,7 @@ const LoginSummaryModal = ({ isOpen, onClose, role }) => {
 			setError("");
 			try {
 				const response = await axios.get(
-					`/api/admin/login_stats_summary.php?period=${period}&role=${role}`
+					`/api/admin/login-stats-summary?period=${period}&role=${role}`
 				);
 				setSummary(response.data);
 			} catch (err) {

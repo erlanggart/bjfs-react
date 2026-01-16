@@ -21,7 +21,7 @@ const HeroGalleryManagementPage = () => {
 
 	const fetchHeroImages = async () => {
 		try {
-			const response = await axios.get("/api/admin/hero_gallery.php");
+			const response = await axios.get("/api/admin/hero-gallery");
 			setHeroImages(response.data.data);
 		} catch (error) {
 			console.error("Error fetching hero images:", error);
@@ -39,7 +39,7 @@ const HeroGalleryManagementPage = () => {
 		formDataUpload.append("image", file);
 
 		try {
-			const response = await axios.post("/api/admin/upload_hero_image.php", formDataUpload, {
+			const response = await axios.post("/api/admin/hero-gallery/upload", formDataUpload, {
 				headers: { "Content-Type": "multipart/form-data" }
 			});
 			
@@ -79,7 +79,7 @@ const handleSubmit = async (e) => {
 
 	try {
 		if (editingImage) {
-			await axios.put("/api/admin/hero_gallery.php", { ...formData, id: editingImage.id });
+			await axios.put("/api/admin/hero-gallery", { ...formData, id: editingImage.id });
 			Swal.fire({
 				icon: "success",
 				title: "Berhasil!",
@@ -88,7 +88,7 @@ const handleSubmit = async (e) => {
 				showConfirmButton: false
 			});
 		} else {
-			await axios.post("/api/admin/hero_gallery.php", formData);
+			await axios.post("/api/admin/hero-gallery", formData);
 			Swal.fire({
 				icon: "success",
 				title: "Berhasil!",
@@ -135,7 +135,7 @@ const handleDelete = async (id) => {
 	if (!result.isConfirmed) return;
 
 	try {
-		await axios.delete(`/api/admin/hero_gallery.php?id=${id}`);
+		await axios.delete(`/api/admin/hero-gallery/${id}`);
 		Swal.fire({
 			icon: "success",
 			title: "Terhapus!",
@@ -155,7 +155,7 @@ const handleDelete = async (id) => {
 	}
 };	const handleToggleActive = async (image) => {
 		try {
-			await axios.put("/api/admin/hero_gallery.php", {
+			await axios.put("/api/admin/hero-gallery", {
 				...image,
 				is_active: image.is_active === 1 ? 0 : 1
 			});
@@ -194,8 +194,8 @@ const handleDelete = async (id) => {
 		// Update display_order for both images
 		try {
 			await Promise.all([
-				axios.put("/api/admin/hero_gallery.php", { ...newImages[currentIndex], display_order: currentIndex }),
-				axios.put("/api/admin/hero_gallery.php", { ...newImages[targetIndex], display_order: targetIndex })
+				axios.put("/api/admin/hero-gallery", { ...newImages[currentIndex], display_order: currentIndex }),
+				axios.put("/api/admin/hero-gallery", { ...newImages[targetIndex], display_order: targetIndex })
 		]);
 		fetchHeroImages();
 		Swal.fire({

@@ -11,7 +11,7 @@ const LatestMatchesSection = () => {
 			try {
 				// Panggil API dengan limit 6 untuk mendapatkan 6 pertandingan terbaru
 				const response = await axios.get(
-					"/api/public/list_matches.php?limit=6"
+					"/api/matches/public?limit=6"
 				);
 				setMatches(response.data);
 			} catch (error) {

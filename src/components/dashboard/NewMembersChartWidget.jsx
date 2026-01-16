@@ -88,7 +88,7 @@ const NewMembersChartWidget = () => {
 	const [loading, setLoading] = useState(true);
 	useEffect(() => {
 		axios
-			.get("/api/admin/dashboard_chart_data.php")
+			.get("/api/admin/dashboard-chart-data")
 			.then((res) => setChartData(res.data))
 			.catch((err) => console.error("Gagal memuat data grafik", err))
 			.finally(() => setLoading(false));

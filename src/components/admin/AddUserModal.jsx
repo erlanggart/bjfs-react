@@ -87,7 +87,7 @@ const AddUserModal = ({ isOpen, onClose, role, refetch, defaultBranchId }) => {
 		setLoading(true);
 		try {
 			const payload = { ...formData, role };
-			await axios.post("/api/admin/create_user.php", payload);
+			await axios.post("/api/admin/users", payload);
 			Swal.fire({
 				title: "Berhasil!",
 				text: "Pengguna baru berhasil ditambahkan.",

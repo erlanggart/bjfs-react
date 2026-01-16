@@ -85,8 +85,9 @@ const MyProfilePage = () => {
 	const fetchProfileData = useCallback(async () => {
 		setLoading((prev) => ({ ...prev, profile: true }));
 		try {
-			const response = await axios.get("/api/users/my_profile.php");
-			setProfile(response.data);
+			const response = await axios.get("/api/users/my-profile");
+			// Backend returns { success: true, profile: {...} }
+			setProfile(response.data.profile);
 		} catch (err) {
 			console.error("Gagal memuat data profil", err);
 			setError("Tidak dapat memuat profil. Silakan coba lagi nanti.");
@@ -127,7 +128,7 @@ const MyProfilePage = () => {
 			setLoading((prev) => ({ ...prev, attendance: true }));
 			try {
 				const response = await axios.get(
-					`/api/members/my_attendance.php?month=${month}&year=${year}`
+					`/api/members/my-attendance?month=${month}&year=${year}`
 				);
 				setAttendance(response.data);
 			} catch (error) {
@@ -162,9 +163,7 @@ const MyProfilePage = () => {
 						src={
 							profile.avatar
 								? profile.avatar
-								: `https://placehold.co/128x128/E0E0E0/757575?text=${profile.full_name.charAt(
-										0
-								  )}`
+								: `https://placehold.co/128x128/E0E0E0/757575?text=${profile.full_name?.charAt(0) || 'U'}`
 						}
 						alt="Avatar"
 						className="w-32 h-32 rounded-full border-4 border-secondary object-cover"
