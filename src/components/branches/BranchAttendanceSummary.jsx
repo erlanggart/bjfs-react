@@ -15,6 +15,8 @@ import {
 } from "react-icons/fi";
 import { Link } from "react-router-dom";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 const BranchAttendanceSummary = ({ branchId, branchName }) => {
 	const currentYear = new Date().getFullYear();
 	const [sessions, setSessions] = useState([]);
@@ -154,16 +156,17 @@ const BranchAttendanceSummary = ({ branchId, branchName }) => {
 		return (
 			<div
 				className={`flex items-center justify-between p-3 bg-white rounded-lg border-2 shadow-sm ${getStatusColor(
-					admin.status
+					admin.status,
 				)}`}
 			>
 				<div className="flex items-center gap-3">
 					<img
 						src={
-							admin.avatar ||
-							`https://placehold.co/40x40/E0E0E0/757575?text=${admin.full_name.charAt(
-								0
-							)}`
+							admin.avatar
+								? `${API_BASE_URL}${admin.avatar}`
+								: `https://placehold.co/40x40/E0E0E0/757575?text=${admin.full_name.charAt(
+										0,
+									)}`
 						}
 						alt={admin.full_name}
 						className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm"
@@ -183,7 +186,7 @@ const BranchAttendanceSummary = ({ branchId, branchName }) => {
 				<div className="text-right">
 					<span
 						className={`flex items-center gap-1 text-xs font-bold px-3 py-1 rounded-full ${getStatusColor(
-							admin.status
+							admin.status,
 						)}`}
 					>
 						{getStatusIcon(admin.status)} {getStatusLabel(admin.status)}
@@ -247,7 +250,7 @@ const BranchAttendanceSummary = ({ branchId, branchName }) => {
 							<button
 								onClick={() =>
 									setExpandedSessionKey((prev) =>
-										prev === session.session_key ? null : session.session_key
+										prev === session.session_key ? null : session.session_key,
 									)
 								}
 								className="w-full flex justify-between items-center p-4 text-left hover:bg-gray-50"
@@ -256,7 +259,7 @@ const BranchAttendanceSummary = ({ branchId, branchName }) => {
 									<div className="flex items-center gap-4 mb-2">
 										<p className="font-bold text-gray-800">
 											{new Date(
-												session.attendance_date + "T00:00:00"
+												session.attendance_date + "T00:00:00",
 											).toLocaleDateString("id-ID", {
 												weekday: "long",
 												day: "numeric",
@@ -347,10 +350,11 @@ const BranchAttendanceSummary = ({ branchId, branchName }) => {
 															>
 																<img
 																	src={
-																		admin.avatar ||
-																		`https://placehold.co/24x24/E0E0E0/757575?text=${admin.full_name.charAt(
-																			0
-																		)}`
+																		admin.avatar
+																			? `${API_BASE_URL}${admin.avatar}`
+																			: `https://placehold.co/24x24/E0E0E0/757575?text=${admin.full_name.charAt(
+																					0,
+																				)}`
 																	}
 																	alt={admin.full_name}
 																	className="w-6 h-6 rounded-full object-cover"
@@ -385,7 +389,7 @@ const BranchAttendanceSummary = ({ branchId, branchName }) => {
 															</span>
 															<span className="font-semibold text-green-600">
 																{new Date(
-																	session.attendance_time_info.first_attendance
+																	session.attendance_time_info.first_attendance,
 																).toLocaleTimeString("id-ID", {
 																	hour: "2-digit",
 																	minute: "2-digit",
@@ -400,7 +404,7 @@ const BranchAttendanceSummary = ({ branchId, branchName }) => {
 															</span>
 															<span className="font-semibold text-blue-600">
 																{new Date(
-																	session.attendance_time_info.last_attendance
+																	session.attendance_time_info.last_attendance,
 																).toLocaleTimeString("id-ID", {
 																	hour: "2-digit",
 																	minute: "2-digit",
@@ -482,10 +486,11 @@ const BranchAttendanceSummary = ({ branchId, branchName }) => {
 																		<div className="flex items-center gap-2">
 																			<img
 																				src={
-																					member.avatar ||
-																					`https://placehold.co/32x32/E0E0E0/757575?text=${member.full_name.charAt(
-																						0
-																					)}`
+																					member.avatar
+																						? `${API_BASE_URL}${member.avatar}`
+																						: `https://placehold.co/32x32/E0E0E0/757575?text=${member.full_name.charAt(
+																								0,
+																							)}`
 																				}
 																				alt={member.full_name}
 																				className="w-8 h-8 rounded-full object-cover"
@@ -498,7 +503,7 @@ const BranchAttendanceSummary = ({ branchId, branchName }) => {
 																					<span className="text-xs text-gray-500 flex items-center gap-1">
 																						<FiClock size={10} />
 																						{new Date(
-																							member.recorded_at
+																							member.recorded_at,
 																						).toLocaleTimeString("id-ID", {
 																							hour: "2-digit",
 																							minute: "2-digit",

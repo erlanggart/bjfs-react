@@ -16,7 +16,7 @@ const FeedbackForm = ({ onUploadSuccess }) => {
 		}
 		setLoading(true);
 		try {
-			const response = await axios.post("/api/members/submit_feedback.php", {
+			const response = await axios.post("/api/members/submit-feedback", {
 				content: feedbackText,
 			});
 			Swal.fire("Terkirim!", response.data.message, "success");

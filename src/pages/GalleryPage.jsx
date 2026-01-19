@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { FiX, FiDownload, FiExternalLink, FiArrowLeft, FiFolder } from "react-icons/fi";
 import { Link } from "react-router-dom";
+import api from "../services/api";
 
 const GalleryPage = () => {
 const [selectedImage, setSelectedImage] = useState(null);
@@ -9,13 +10,11 @@ const [selectedAlbum, setSelectedAlbum] = useState(null);
 const [loading, setLoading] = useState(true);
 const [error, setError] = useState(null);
 
-	const DRIVE_FOLDER_URL = "https://drive.google.com/drive/folders/1ohFEQW-Ou8XYTsk0DUM87S-tGNU-WF0d";
+	// Get Google Drive links from env (support multiple links)
+	const DRIVE_FOLDER_URLS = (import.meta.env.VITE_GDRIVE_LINKS || "").split(',').filter(Boolean);
+	const GALLERY_API_PATH = import.meta.env.VITE_GALLERY_API_PATH || '/api/public/google_drive_albums.php';
 
 	useEffect(() => {
-		// Auto-detect: development uses /api/, production uses /bogor_junior_api/api/
-		const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-		const apiPath = isDevelopment ? '/api/public/google_drive_albums.php' : '/bogor_junior_api/api/public/google_drive_albums.php';
-		
 		let isCancelled = false;
 		
 		const fetchAlbums = async () => {
@@ -23,15 +22,11 @@ const [error, setError] = useState(null);
 			setError(null);
 			
 			try {
-				const response = await fetch(apiPath);
+				const response = await api.get(GALLERY_API_PATH);
 				
 				if (isCancelled) return;
 				
-				if (!response.ok) {
-					throw new Error("Gagal mengambil data gallery dari server");
-				}
-				
-				const json = await response.json();
+				const json = response.data;
 				
 				if (isCancelled) return;
 				
@@ -43,7 +38,7 @@ const [error, setError] = useState(null);
 				}
 			} catch (err) {
 				if (isCancelled) return;
-				setError(err.message);
+				setError(err.message || "Gagal mengambil data gallery dari server");
 			} finally {
 				if (!isCancelled) {
 					setLoading(false);
@@ -56,7 +51,7 @@ const [error, setError] = useState(null);
 		return () => {
 			isCancelled = true;
 		};
-	}, []);
+	}, [GALLERY_API_PATH]);
 
 const openLightbox = (image) => {
 setSelectedImage(image);
@@ -124,15 +119,41 @@ className="flex items-center gap-2 text-gray-600 hover:text-primary transition-c
 </>
 )}
 </div>
-<a
-href={DRIVE_FOLDER_URL}
-target="_blank"
-rel="noopener noreferrer"
-className="flex items-center gap-2 text-primary hover:opacity-80 transition-opacity"
->
-<FiExternalLink size={18} />
-<span className="hidden md:inline">Buka di Google Drive</span>
-</a>
+{DRIVE_FOLDER_URLS.length > 0 && (
+	<div className="flex items-center gap-3">
+		{DRIVE_FOLDER_URLS.length === 1 ? (
+			<a
+				href={DRIVE_FOLDER_URLS[0]}
+				target="_blank"
+				rel="noopener noreferrer"
+				className="flex items-center gap-2 text-primary hover:opacity-80 transition-opacity"
+			>
+				<FiExternalLink size={18} />
+				<span className="hidden md:inline">Buka di Google Drive</span>
+			</a>
+		) : (
+			<div className="relative group">
+				<button className="flex items-center gap-2 text-primary hover:opacity-80 transition-opacity">
+					<FiExternalLink size={18} />
+					<span className="hidden md:inline">Google Drive ({DRIVE_FOLDER_URLS.length})</span>
+				</button>
+				<div className="absolute right-0 top-full mt-2 bg-white shadow-lg rounded-lg py-2 min-w-[200px] hidden group-hover:block z-50">
+					{DRIVE_FOLDER_URLS.map((url, index) => (
+						<a
+							key={index}
+							href={url}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="block px-4 py-2 hover:bg-gray-100 text-gray-700 text-sm"
+						>
+							📁 Folder {index + 1}
+						</a>
+					))}
+				</div>
+			</div>
+		)}
+	</div>
+)}
 </div>
 </div>
 </header>
@@ -167,14 +188,22 @@ className="flex items-center gap-2 text-primary hover:opacity-80 transition-opac
 {error && !loading && (
 <div className="text-center py-20">
 <p className="text-red-600 mb-4">⚠️ {error}</p>
-<a
-href={DRIVE_FOLDER_URL}
-target="_blank"
-rel="noopener noreferrer"
-className="text-primary hover:underline"
->
-Lihat langsung di Google Drive →
-</a>
+{DRIVE_FOLDER_URLS.length > 0 && (
+	<div className="flex flex-col gap-2 items-center">
+		<p className="text-gray-600 mb-2">Atau lihat langsung di Google Drive:</p>
+		{DRIVE_FOLDER_URLS.map((url, index) => (
+			<a
+				key={index}
+				href={url}
+				target="_blank"
+				rel="noopener noreferrer"
+				className="text-primary hover:underline"
+			>
+				📁 Folder {index + 1} →
+			</a>
+		))}
+	</div>
+)}
 </div>
 )}
 

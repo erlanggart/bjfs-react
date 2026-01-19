@@ -128,7 +128,7 @@ const MyProfilePage = () => {
 			setLoading((prev) => ({ ...prev, attendance: true }));
 			try {
 				const response = await axios.get(
-					`/api/members/my-attendance?month=${month}&year=${year}`
+					`/api/members/my-attendance?month=${month}&year=${year}`,
 				);
 				setAttendance(response.data);
 			} catch (error) {
@@ -162,8 +162,8 @@ const MyProfilePage = () => {
 					<img
 						src={
 							profile.avatar
-								? profile.avatar
-								: `https://placehold.co/128x128/E0E0E0/757575?text=${profile.full_name?.charAt(0) || 'U'}`
+								? `${API_BASE_URL}${profile.avatar}`
+								: `https://placehold.co/128x128/E0E0E0/757575?text=${profile.full_name?.charAt(0) || "U"}`
 						}
 						alt="Avatar"
 						className="w-32 h-32 rounded-full border-4 border-secondary object-cover"
@@ -239,7 +239,7 @@ const MyProfilePage = () => {
 									<div>
 										<p className="font-semibold text-gray-800">
 											{new Date(
-												record.attendance_date + "T00:00:00"
+												record.attendance_date + "T00:00:00",
 											).toLocaleDateString("id-ID", {
 												weekday: "long",
 												day: "numeric",

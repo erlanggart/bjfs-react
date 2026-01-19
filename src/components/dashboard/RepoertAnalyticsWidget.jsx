@@ -9,6 +9,8 @@ import {
 } from "react-icons/fi";
 import { Link } from "react-router-dom";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 // Komponen untuk menampilkan daftar member di dalam widget
 const MemberListColumn = ({ title, members, icon }) => {
 	const [openBranch, setOpenBranch] = useState(null);
@@ -63,10 +65,11 @@ const MemberListColumn = ({ title, members, icon }) => {
 												>
 													<img
 														src={
-															member.avatar ||
-															`https://placehold.co/40x40/E0E0E0/757575?text=${member.full_name.charAt(
-																0
-															)}`
+															member.avatar
+																? `${API_BASE_URL}${member.avatar}`
+																: `https://placehold.co/40x40/E0E0E0/757575?text=${member.full_name.charAt(
+																		0,
+																	)}`
 														}
 														alt={member.full_name}
 														className="w-10 h-10 rounded-full object-cover"
@@ -119,7 +122,7 @@ const ReportAnalyticsWidget = () => {
 	const fetchData = useCallback(() => {
 		setLoading(true);
 		axios
-			.get("/api/admin/dashboard_report_status.php", {
+			.get("/api/admin/dashboard-report-status", {
 				params: { month, year },
 			})
 			.then((res) => {

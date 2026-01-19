@@ -13,6 +13,8 @@ import {
 	FiCornerUpLeft,
 } from "react-icons/fi";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 const FeedbackCard = ({ feedback, onStatusChange }) => {
 	const handleStatusUpdate = (newStatus) => {
 		Swal.fire({
@@ -26,7 +28,7 @@ const FeedbackCard = ({ feedback, onStatusChange }) => {
 		}).then(async (result) => {
 			if (result.isConfirmed) {
 				try {
-					await axios.post("/api/feedback/update_status.php", {
+					await axios.put(`/api/feedback/${feedback.id}/status`, {
 						id: feedback.id,
 						status: newStatus,
 					});
@@ -45,7 +47,7 @@ const FeedbackCard = ({ feedback, onStatusChange }) => {
 	const handleSendReply = async () => {
 		if (replyText.trim() === "") return;
 		try {
-			await axios.post("/api/feedback/reply.php", {
+			await axios.post(`/api/feedback/${feedback.id}/reply`, {
 				feedback_id: feedback.id,
 				reply_content: replyText,
 			});
@@ -62,10 +64,11 @@ const FeedbackCard = ({ feedback, onStatusChange }) => {
 			<div className="flex items-start gap-4">
 				<img
 					src={
-						feedback.member_avatar ||
-						`https://placehold.co/48x48/E0E0E0/757575?text=${feedback.member_name.charAt(
-							0
-						)}`
+						feedback.member_avatar
+							? `${API_BASE_URL}${feedback.member_avatar}`
+							: `https://placehold.co/48x48/E0E0E0/757575?text=${feedback.member_name.charAt(
+									0,
+								)}`
 					}
 					alt={feedback.member_name}
 					className="w-12 h-12 rounded-full object-cover"
@@ -173,7 +176,7 @@ const FeedbackPage = () => {
 	const fetchFeedback = useCallback(async () => {
 		setLoading(true);
 		try {
-			const response = await axios.get("/api/feedback/list.php");
+			const response = await axios.get("/api/feedback");
 			setAllFeedback(Array.isArray(response.data) ? response.data : []);
 		} catch (error) {
 			Swal.fire("Error", "Gagal memuat data feedback.", "error");

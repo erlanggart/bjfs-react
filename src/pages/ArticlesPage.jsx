@@ -1,7 +1,7 @@
 // File: src/pages/ArticlesPage.jsx
 import React, { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
+import api from "../services/api";
 import { useDebounce } from "use-debounce";
 import { FiSearch } from "react-icons/fi";
 import Header from "../layouts/Header";
@@ -53,7 +53,7 @@ const ArticlesPage = () => {
 	const fetchArticles = useCallback(async (currentPage, search) => {
 		setLoading(true);
 		try {
-			const response = await axios.get("/api/public/articles/list", {
+			const response = await api.get("/api/public/articles/list", {
 				params: { page: currentPage, search: search },
 			});
 			const data = response.data;

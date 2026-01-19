@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
+import api from "../../services/api";
 import Swal from "sweetalert2";
 
 const LatestArticles = () => {
@@ -11,7 +11,7 @@ const LatestArticles = () => {
 		const fetchArticles = async () => {
 			try {
 				// Panggil API publik dengan limit 3 artikel
-				const response = await axios.get("/api/public/articles/list?limit=3");
+				const response = await api.get("/api/public/articles/list?limit=3");
 				setArticles(response.data);
 			} catch (error) {
 				console.error("Gagal memuat artikel:", error);

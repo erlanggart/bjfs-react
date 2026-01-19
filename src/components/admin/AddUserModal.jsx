@@ -34,7 +34,7 @@ const AddUserModal = ({ isOpen, onClose, role, refetch, defaultBranchId }) => {
 				// Jika super admin, ambil daftar semua cabang
 				const fetchBranches = async () => {
 					try {
-						const response = await axios.get("/api/branches/list.php");
+						const response = await axios.get("/api/branches");
 						setBranches(response.data);
 						if (response.data.length > 0) {
 							// Set default ke cabang pertama atau ke cabang yang dipilih dari halaman detail

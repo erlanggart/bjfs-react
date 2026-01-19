@@ -223,7 +223,7 @@ const MasteryGKReportForm = ({ initialData, onSubmit }) => {
 			power: 5,
 			kecepatan: 5,
 			daya_tahan: 5,
-		}
+		},
 	);
 	const [notes, setNotes] = useState(initialData?.notes || "");
 	const fields = {
@@ -424,7 +424,7 @@ export const EvaluationModal = ({
 					setLoading(true);
 					try {
 						const response = await axios.get(
-							`/api/members/get_evaluation.php?id=${evaluationId}`
+							`/api/members/evaluations/${evaluationId}`,
 						);
 						setInitialData({
 							scores: JSON.parse(response.data.scores),
@@ -432,7 +432,13 @@ export const EvaluationModal = ({
 						});
 						setReportType(response.data.report_type); // Tentukan tipe dari data yang ada
 					} catch (error) {
-						/* ... */
+						console.error("Error fetching evaluation:", error);
+						Swal.fire(
+							"Gagal!",
+							error.response?.data?.message || "Gagal memuat data evaluasi.",
+							"error",
+						);
+						onClose();
 					} finally {
 						setLoading(false);
 					}
@@ -444,10 +450,10 @@ export const EvaluationModal = ({
 				setLoading(false);
 			}
 		}
-	}, [evaluationId, isOpen, isEditMode, reportTypeToCreate]);
+	}, [evaluationId, isOpen, isEditMode, reportTypeToCreate, onClose]);
 
 	const handleSubmit = async ({ scores, notes, type }) => {
-		const url = isEditMode
+		const endpoint = isEditMode
 			? "/api/members/update_evaluation.php"
 			: "/api/members/create_evaluation.php";
 		const payload = {
@@ -460,11 +466,15 @@ export const EvaluationModal = ({
 		};
 
 		try {
-			await axios.post(url, payload);
+			if (isEditMode) {
+				await axios.put(endpoint, payload);
+			} else {
+				await axios.post(endpoint, payload);
+			}
 			Swal.fire(
 				"Berhasil!",
 				`Laporan evaluasi berhasil ${isEditMode ? "diperbarui" : "disimpan"}.`,
-				"success"
+				"success",
 			);
 			refetch();
 			onClose();
@@ -472,7 +482,7 @@ export const EvaluationModal = ({
 			Swal.fire(
 				"Gagal!",
 				error.response?.data?.message || "Gagal menyimpan laporan.",
-				"error"
+				"error",
 			);
 		}
 	};
@@ -549,7 +559,7 @@ export const EvaluationModal = ({
 						<FiX />
 					</button>
 				</div>
-				<div className="flex-grow overflow-y-auto pr-2">
+				<div className="grow overflow-y-auto pr-2">
 					{loading ? <p>Memuat...</p> : renderForm()}
 				</div>
 			</div>

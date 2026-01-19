@@ -138,16 +138,55 @@ const LandingPage = () => {
 	const [totalMembers, setTotalMembers] = useState(0);
 	const [heroImages, setHeroImages] = useState([]);
 	const [showDropdown, setShowDropdown] = useState(false);
+	const [isScrolled, setIsScrolled] = useState(false);
 
 	// Initialize Google Analytics
 	useGoogleAnalytics();
 
 	// Inisialisasi AOS
 	useEffect(() => {
-		AOS.init({
-			duration: 800,
-			once: false, // Animasi akan berulang saat scroll kembali
-		});
+		// Wait for fonts to load before initializing AOS
+		if (document.fonts) {
+			document.fonts.ready.then(() => {
+				AOS.init({
+					duration: 600,
+					once: false,
+					offset: 50,
+					delay: 0,
+					easing: 'ease-out',
+					disable: false,
+					startEvent: 'DOMContentLoaded',
+				});
+				// Refresh AOS after initialization
+				setTimeout(() => AOS.refresh(), 100);
+			});
+		} else {
+			// Fallback if Font Loading API not supported
+			AOS.init({
+				duration: 600,
+				once: false,
+				offset: 50,
+				delay: 0,
+				easing: 'ease-out',
+				disable: false,
+				startEvent: 'DOMContentLoaded',
+			});
+			setTimeout(() => AOS.refresh(), 100);
+		}
+	}, []);
+
+	// Handle scroll untuk navbar transparant
+	useEffect(() => {
+		const handleScroll = () => {
+			if (window.scrollY > 50) {
+				setIsScrolled(true);
+			} else {
+				setIsScrolled(false);
+			}
+		};
+
+		window.addEventListener('scroll', handleScroll);
+		return () => window.removeEventListener('scroll', handleScroll);
 	}, []);
 
 	// Fetch data total members and hero images
@@ -249,28 +288,40 @@ const LandingPage = () => {
                 `}
 			</style>
 			{/* Header */}
-			<header className="bg-[var(--color-primary)]/90 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
-				<div className="container mx-auto px-6 py-3 flex justify-between items-center">
+			<header className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+				isScrolled 
+					? 'bg-white/50 backdrop-blur-md shadow-lg' 
+					: 'bg-transparent'
+			}`}>
+				<div className="container mx-auto px-6 py-4 flex justify-between items-center">
 					<div className="flex items-center gap-2">
 						<img src="/bjfs_logo.svg" alt="Logo BJFS" className="w-10 h-10" />
-						<span className="text-white text-lg font-bold">Bogor Junior</span>
+						<span className={`text-lg font-bold transition-colors ${
+							isScrolled ? 'text-primary' : 'text-white'
+						}`}>Bogor Junior</span>
 					</div>
 					<nav className="hidden md:flex items-center space-x-6">
 						<a
 							onClick={() => scrollToSection("feature-programs")}
-							className="text-white hover:text-secondary transition-colors cursor-pointer font-semibold"
+							className={`hover:text-secondary transition-colors cursor-pointer font-semibold ${
+								isScrolled ? 'text-gray-700' : 'text-white'
+							}`}
 						>
 							Program
 						</a>
 						<a
 							onClick={() => scrollToSection("coach")}
-							className="text-white hover:text-secondary transition-colors cursor-pointer font-semibold"
+							className={`hover:text-secondary transition-colors cursor-pointer font-semibold ${
+								isScrolled ? 'text-gray-700' : 'text-white'
+							}`}
 						>
 							Coach
 						</a>
 						<a
 							onClick={() => scrollToSection("cabang")}
-							className="text-white hover:text-secondary transition-colors cursor-pointer font-semibold"
+							className={`hover:text-secondary transition-colors cursor-pointer font-semibold ${
+								isScrolled ? 'text-gray-700' : 'text-white'
+							}`}
 						>
 							Cabang
 						</a>
@@ -281,7 +332,9 @@ const LandingPage = () => {
 							onMouseEnter={() => setShowDropdown(true)}
 							onMouseLeave={() => setShowDropdown(false)}
 						>
-							<button className="text-white hover:text-secondary transition-colors cursor-pointer font-semibold flex items-center gap-1">
+							<button className={`hover:text-secondary transition-colors cursor-pointer font-semibold flex items-center gap-1 ${
+								isScrolled ? 'text-gray-700' : 'text-white'
+							}`}>
 								Lainnya
 								<FiChevronDown className={`transition-transform ${showDropdown ? 'rotate-180' : ''}`} />
 							</button>
@@ -333,7 +386,9 @@ const LandingPage = () => {
 
 						<a
 							onClick={() => scrollToSection("faq")}
-							className="text-white hover:text-secondary transition-colors cursor-pointer font-semibold"
+							className={`hover:text-secondary transition-colors cursor-pointer font-semibold ${
+								isScrolled ? 'text-gray-700' : 'text-white'
+							}`}
 						>
 							FAQ
 						</a>

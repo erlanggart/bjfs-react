@@ -22,7 +22,7 @@ const EditBranchModal = ({ isOpen, onClose, refetch, branchData }) => {
 		}
 		setLoading(true);
 		try {
-			await axios.post("/api/branches/update.php", {
+			await axios.put(`/api/branches/${branchData.id}`, {
 				id: branchData.id,
 				name,
 				address,

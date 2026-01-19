@@ -1,7 +1,9 @@
 // File: src/components/BirthdayCalendar.jsx
 import React, { useState, useEffect, useMemo } from "react";
-import axios from "axios";
+import api from "../services/api";
 import { FiChevronLeft, FiChevronRight, FiGift } from "react-icons/fi";
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const BirthdayCalendar = ({ branchId }) => {
 	const [currentDate, setCurrentDate] = useState(new Date());
@@ -15,7 +17,7 @@ const BirthdayCalendar = ({ branchId }) => {
 			setLoading(true);
 			try {
 				const month = currentDate.getMonth() + 1;
-				const response = await axios.get("/api/branches/get_birthdays.php", {
+				const response = await api.get("/api/branches/birthdays", {
 					params: { branch_id: branchId, month: month },
 				});
 				setBirthdays(response.data);
@@ -124,10 +126,11 @@ const BirthdayCalendar = ({ branchId }) => {
 								<li key={member.full_name} className="flex items-center gap-3">
 									<img
 										src={
-											member.avatar ||
-											`https://placehold.co/40x40/E0E0E0/757575?text=${member.full_name.charAt(
-												0
-											)}`
+											member.avatar
+												? `${API_BASE_URL}${member.avatar}`
+												: `https://placehold.co/40x40/E0E0E0/757575?text=${member.full_name.charAt(
+														0,
+													)}`
 										}
 										alt={member.full_name}
 										className="w-8 h-8 rounded-full object-cover"

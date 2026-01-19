@@ -11,7 +11,9 @@ import {
 import { Link } from "react-router-dom";
 import ChartLoader from "./ChartLoader";
 
-// Komponen untuk statistik progress bar
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
+// Komponen untuk statistik progress bar (Stacked Bar)
 const PaymentStats = ({ stats }) => {
 	if (!Array.isArray(stats) || stats.length === 0) {
 		return (
@@ -20,62 +22,133 @@ const PaymentStats = ({ stats }) => {
 			</p>
 		);
 	}
+
 	const totalActive = stats.reduce(
-		(sum, branch) => sum + parseInt(branch.total_active_members),
-		0
+		(sum, branch) => sum + parseInt(branch.total_active_members || 0),
+		0,
 	);
-	const totalPaid = stats.reduce(
-		(sum, branch) => sum + parseInt(branch.paid_members),
-		0
+	const totalFull = stats.reduce(
+		(sum, branch) => sum + parseInt(branch.paid_full || 0),
+		0,
 	);
-	const overallPercentage =
-		totalActive > 0 ? ((totalPaid / totalActive) * 100).toFixed(1) : 0;
+	const totalCuti = stats.reduce(
+		(sum, branch) => sum + parseInt(branch.paid_cuti || 0),
+		0,
+	);
+	const totalPaid = totalFull + totalCuti;
+
+	const overallFullPercentage =
+		totalActive > 0 ? ((totalFull / totalActive) * 100).toFixed(1) : 0;
+	const overallCutiPercentage =
+		totalActive > 0 ? ((totalCuti / totalActive) * 100).toFixed(1) : 0;
 
 	return (
 		<div className="space-y-4">
+			{/* Legend */}
+			<div className="flex gap-6 mb-2 text-sm">
+				<div className="flex items-center gap-2">
+					<div className="w-4 h-4 bg-green-500 rounded"></div>
+					<span className="text-gray-600 font-medium">Full Payment</span>
+				</div>
+				<div className="flex items-center gap-2">
+					<div className="w-4 h-4 bg-blue-500 rounded"></div>
+					<span className="text-gray-600 font-medium">Cuti Payment</span>
+				</div>
+				<div className="flex items-center gap-2">
+					<div className="w-4 h-4 bg-gray-300 rounded"></div>
+					<span className="text-gray-600 font-medium">Belum Bayar</span>
+				</div>
+			</div>
+
 			{stats.map((branch) => {
-				const percentage =
-					branch.total_active_members > 0
-						? (
-								(branch.paid_members / branch.total_active_members) *
-								100
-						  ).toFixed(1)
-						: 0;
+				const fullCount = parseInt(branch.paid_full || 0);
+				const cutiCount = parseInt(branch.paid_cuti || 0);
+				const totalActiveMembers = parseInt(branch.total_active_members || 0);
+
+				const fullPercentage =
+					totalActiveMembers > 0 ? (fullCount / totalActiveMembers) * 100 : 0;
+				const cutiPercentage =
+					totalActiveMembers > 0 ? (cutiCount / totalActiveMembers) * 100 : 0;
+				const totalPaidPercentage = fullPercentage + cutiPercentage;
+
 				return (
 					<div key={branch.branch_name}>
-						<div className="flex justify-between text-sm mb-1">
+						<div className="flex justify-between text-sm mb-2">
 							<span className="font-semibold text-gray-700">
 								{branch.branch_name}
 							</span>
 							<span className="text-gray-500">
-								{branch.paid_members} / {branch.total_active_members} Member
+								<span className="text-green-600 font-semibold">
+									{fullCount}
+								</span>{" "}
+								Full +
+								<span className="text-blue-600 font-semibold ml-1">
+									{cutiCount}
+								</span>{" "}
+								Cuti /<span className="ml-1">{totalActiveMembers} Member</span>
 							</span>
 						</div>
-						<div className="w-full bg-gray-200 rounded-full h-4">
+						<div className="w-full bg-gray-200 rounded-full h-6 flex overflow-hidden">
+							{/* Full Payment Bar */}
 							<div
-								className="bg-green-500 h-4 rounded-full text-center text-white text-xs font-bold"
-								style={{ width: `${percentage}%` }}
+								className="bg-green-500 h-6 flex items-center justify-center text-white text-xs font-bold transition-all duration-300 hover:bg-green-600"
+								style={{ width: `${fullPercentage}%` }}
+								title={`Full: ${fullCount} (${fullPercentage.toFixed(1)}%)`}
 							>
-								{percentage > 10 && `${percentage}%`}
+								{fullPercentage > 8 && `${fullPercentage.toFixed(0)}%`}
 							</div>
+							{/* Cuti Payment Bar */}
+							<div
+								className="bg-blue-500 h-6 flex items-center justify-center text-white text-xs font-bold transition-all duration-300 hover:bg-blue-600"
+								style={{ width: `${cutiPercentage}%` }}
+								title={`Cuti: ${cutiCount} (${cutiPercentage.toFixed(1)}%)`}
+							>
+								{cutiPercentage > 8 && `${cutiPercentage.toFixed(0)}%`}
+							</div>
+						</div>
+						<div className="text-xs text-gray-500 mt-1 text-right">
+							Total: {totalPaidPercentage.toFixed(1)}%
 						</div>
 					</div>
 				);
 			})}
+
 			<div className="border-t pt-4 mt-4">
-				<div className="flex justify-between text-md font-bold mb-1">
+				<div className="flex justify-between text-md font-bold mb-2">
 					<span className="text-gray-800">Total Keseluruhan</span>
 					<span className="text-gray-600">
-						{totalPaid} / {totalActive} Member
+						<span className="text-green-600">{totalFull}</span> Full +
+						<span className="text-blue-600 ml-1">{totalCuti}</span> Cuti /
+						<span className="ml-1">{totalActive} Member</span>
 					</span>
 				</div>
-				<div className="w-full bg-gray-200 rounded-full h-5">
+				<div className="w-full bg-gray-200 rounded-full h-7 flex overflow-hidden">
+					{/* Total Full Payment Bar */}
 					<div
-						className="bg-primary h-5 rounded-full text-center text-white font-bold"
-						style={{ width: `${overallPercentage}%` }}
+						className="bg-green-500 h-7 flex items-center justify-center text-white font-bold transition-all duration-300"
+						style={{ width: `${overallFullPercentage}%` }}
+						title={`Total Full: ${totalFull} (${overallFullPercentage}%)`}
 					>
-						{overallPercentage}%
+						{parseFloat(overallFullPercentage) > 10 &&
+							`${overallFullPercentage}%`}
 					</div>
+					{/* Total Cuti Payment Bar */}
+					<div
+						className="bg-blue-500 h-7 flex items-center justify-center text-white font-bold transition-all duration-300"
+						style={{ width: `${overallCutiPercentage}%` }}
+						title={`Total Cuti: ${totalCuti} (${overallCutiPercentage}%)`}
+					>
+						{parseFloat(overallCutiPercentage) > 10 &&
+							`${overallCutiPercentage}%`}
+					</div>
+				</div>
+				<div className="text-sm text-gray-600 mt-2 text-right font-semibold">
+					Total Terbayar:{" "}
+					{(
+						parseFloat(overallFullPercentage) +
+						parseFloat(overallCutiPercentage)
+					).toFixed(1)}
+					%
 				</div>
 			</div>
 		</div>
@@ -142,10 +215,11 @@ const PendingPaymentsList = ({ payments }) => {
 										>
 											<img
 												src={
-													p.member_avatar ||
-													`https://placehold.co/40x40/E0E0E0/757575?text=${p.member_name.charAt(
-														0
-													)}`
+													p.member_avatar
+														? `${API_BASE_URL}${p.member_avatar}`
+														: `https://placehold.co/40x40/E0E0E0/757575?text=${p.member_name.charAt(
+																0,
+															)}`
 												}
 												alt={p.member_name}
 												className="w-10 h-10 rounded-full object-cover"
@@ -230,10 +304,11 @@ const MemberListColumn = ({ title, members, icon, textColor }) => {
 												>
 													<img
 														src={
-															member.avatar ||
-															`https://placehold.co/40x40/E0E0E0/757575?text=${member.full_name.charAt(
-																0
-															)}`
+															member.avatar
+																? `${API_BASE_URL}${member.avatar}`
+																: `https://placehold.co/40x40/E0E0E0/757575?text=${member.full_name.charAt(
+																		0,
+																	)}`
 														}
 														alt={member.full_name}
 														className="w-10 h-10 rounded-full object-cover"
@@ -317,8 +392,8 @@ const PaymentAnalyticsWidget = () => {
 		<div className="">
 			<div className="grid grid-cols-1 lg:grid-cols-8 gap-x-8 gap-y-6">
 				{/* Kolom Kiri: Analitik Pembayaran */}
-				<div className="col-span-1 lg:col-span-5">
-					<div className="bg-white p-6 rounded-lg shadow-md  flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+				<div className="col-span-1 lg:col-span-5 bg-white p-6 rounded-lg shadow-md">
+					<div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
 						<h2 className="text-xl font-bold text-primary flex items-center gap-2">
 							<FiTrendingUp /> Analitik Pembayaran
 						</h2>
@@ -357,9 +432,8 @@ const PaymentAnalyticsWidget = () => {
 					) : (
 						<>
 							{/* Progress Bar (Statistik) */}
-							<div className="bg-white p-6 rounded-lg shadow-md space-y-4 mb-6">
-								<PaymentStats stats={stats} />
-							</div>
+
+							<PaymentStats stats={stats} />
 
 							{/* Daftar Member */}
 							<div className=" grid grid-cols-1 md:grid-cols-2 gap-6">

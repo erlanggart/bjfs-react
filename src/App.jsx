@@ -1,5 +1,5 @@
 // File: src/App.jsx
-import React, { useEffect } from "react";
+import React, { useEffect, lazy, Suspense } from "react";
 import {
 	BrowserRouter as Router,
 	Routes,
@@ -10,43 +10,42 @@ import {
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import AOS from "aos";
 import "aos/dist/aos.css";
-import LoginPage from "./pages/LoginPage";
 import ProtectedRoute from "./components/ProtectedRoutes";
-import MainLayout from "./layouts/MainLayout";
-
-import BranchManagementPage from "./pages/admin/BranchManagementPage";
-import UserManagementPage from "./pages/admin/UserManagementPage";
-import AttendancePage from "./pages/branch-admin/Attendance";
-import MyProfilePage from "./pages/member/MyProfilePage";
-import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
-import ScheduleManagementPage from "./pages/branch-admin/ScheduleManagementPage";
-import BranchAdminLayout from "./layouts/BranchAdminLayout";
-import AttendanceReportPage from "./pages/branch-admin/AttendanceReportPage";
-import MemberLayout from "./layouts/MemberLayout";
-import ProfileSettingsPage from "./pages/ProfileSettings";
-import BranchDetailPage from "./pages/admin/BranchDetailPage";
-import LandingPage from "./pages/LandingPage";
-import MemberDetailPage from "./pages/MemberDetailPage";
-import MemberListPage from "./pages/branch-admin/MemberListPage";
-import ArticleManagementPage from "./pages/admin/ArticleManagementPage";
-import ArticleEditorPage from "./pages/admin/ArticleEditorPage";
-import MemberReportPage from "./pages/member/MemberRaportPage";
-import MemberReportListPage from "./pages/member/MemberRaportList";
 import AxiosInterceptor from "./components/AxiosInterceptor";
-import PaymentPage from "./pages/member/PaymentPage";
-import FeedbackPage from "./pages/admin/FeedbackPage";
-import FeedbackHistoryPage from "./pages/member/FeedbackHistory";
-import ArticleDetailPage from "./pages/public/ArticleDetailPage";
-import ArticlesPage from "./pages/ArticlesPage";
-import MatchManagementPage from "./pages/admin/MatchManagementPage";
-import MatchEditorPage from "./pages/admin/MatchEditorPage";
-import MatchDetailPage from "./pages/MatchDetailPage";
-import AllMatchesPage from "./pages/AllMatchesPage";
-import GalleryPage from "./pages/GalleryPage";
-import HeroGalleryManagementPage from "./pages/admin/HeroGalleryManagementPage";
-import BranchesPage from "./pages/public/BranchesPage";
-import BranchSchedulePage from "./pages/public/BranchSchedulePage";
-import NotFoundPage from "./pages/NotFoundPage";
+
+// Lazy load all pages
+const LoginPage = lazy(() => import("./pages/LoginPage"));
+const MainLayout = lazy(() => import("./layouts/MainLayout"));
+const BranchManagementPage = lazy(() => import("./pages/admin/BranchManagementPage"));
+const UserManagementPage = lazy(() => import("./pages/admin/UserManagementPage"));
+const AttendancePage = lazy(() => import("./pages/branch-admin/Attendance"));
+const MyProfilePage = lazy(() => import("./pages/member/MyProfilePage"));
+const AdminDashboardPage = lazy(() => import("./pages/admin/AdminDashboardPage"));
+const ScheduleManagementPage = lazy(() => import("./pages/branch-admin/ScheduleManagementPage"));
+const AttendanceReportPage = lazy(() => import("./pages/branch-admin/AttendanceReportPage"));
+const ProfileSettingsPage = lazy(() => import("./pages/ProfileSettings"));
+const BranchDetailPage = lazy(() => import("./pages/admin/BranchDetailPage"));
+const LandingPage = lazy(() => import("./pages/LandingPage"));
+const MemberDetailPage = lazy(() => import("./pages/MemberDetailPage"));
+const MemberListPage = lazy(() => import("./pages/branch-admin/MemberListPage"));
+const ArticleManagementPage = lazy(() => import("./pages/admin/ArticleManagementPage"));
+const ArticleEditorPage = lazy(() => import("./pages/admin/ArticleEditorPage"));
+const MemberReportPage = lazy(() => import("./pages/member/MemberRaportPage"));
+const MemberReportListPage = lazy(() => import("./pages/member/MemberRaportList"));
+const PaymentPage = lazy(() => import("./pages/member/PaymentPage"));
+const FeedbackPage = lazy(() => import("./pages/admin/FeedbackPage"));
+const FeedbackHistoryPage = lazy(() => import("./pages/member/FeedbackHistory"));
+const ArticleDetailPage = lazy(() => import("./pages/public/ArticleDetailPage"));
+const ArticlesPage = lazy(() => import("./pages/ArticlesPage"));
+const MatchManagementPage = lazy(() => import("./pages/admin/MatchManagementPage"));
+const MatchEditorPage = lazy(() => import("./pages/admin/MatchEditorPage"));
+const MatchDetailPage = lazy(() => import("./pages/MatchDetailPage"));
+const AllMatchesPage = lazy(() => import("./pages/AllMatchesPage"));
+const GalleryPage = lazy(() => import("./pages/GalleryPage"));
+const HeroGalleryManagementPage = lazy(() => import("./pages/admin/HeroGalleryManagementPage"));
+const BranchesPage = lazy(() => import("./pages/public/BranchesPage"));
+const BranchSchedulePage = lazy(() => import("./pages/public/BranchSchedulePage"));
+const NotFoundPage = lazy(() => import("./pages/NotFoundPage"));
 
 const RoleBasedRedirect = () => {
 	const { user } = useAuth();
@@ -76,6 +75,14 @@ function App() {
 		<Router>
 			<AuthProvider>
 				<AxiosInterceptor>
+					<Suspense fallback={
+						<div className="flex items-center justify-center min-h-screen">
+							<div className="text-center">
+								<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+								<p className="mt-4 text-gray-600">Memuat...</p>
+							</div>
+						</div>
+					}>
 					<Routes>
 						<Route path="/" element={<LandingPage />} />
 						<Route path="/cabang" element={<BranchesPage />} />
@@ -91,7 +98,6 @@ function App() {
 							path="/articles/:id"
 							element={<ArticleDetailPage isPublic={true} />}
 						/>
-						<Route path="pertandingan/:id" element={<MatchDetailPage />} />"
 						<Route path="/login" element={<LoginPage />} />
 						<Route element={<ProtectedRoute />}>
 							<Route path="/portal" element={<RoleBasedRedirect />} />
@@ -101,63 +107,43 @@ function App() {
 								element={<MemberReportPage />}
 							/>
 
-							{/* Rute untuk Super Admin dengan MainLayout */}
-							<Route path="/admin" element={<MainLayout />}>
-								<Route path="dashboard" element={<AdminDashboardPage />} />
-								<Route path="cabang" element={<BranchManagementPage />} />
-								<Route path="cabang/:id" element={<BranchDetailPage />} />
-								<Route path="users" element={<UserManagementPage />} />
-							<Route path="member/:id" element={<MemberDetailPage />} />
-							<Route path="feedback" element={<FeedbackPage />} />
-							<Route path="articles" element={<ArticleManagementPage />} />
-							<Route path="hero-gallery" element={<HeroGalleryManagementPage />} />
-							<Route path="pertandingan" element={<MatchManagementPage />} />"
-								<Route
-									path="pertandingan/edit/:id"
-									element={<MatchEditorPage />}
-								/>
-								"
-								<Route path="pertandingan/:id" element={<MatchEditorPage />} />"
-								<Route
-									path="/admin/articles/:id"
-									element={<ArticleEditorPage />}
-								/>
-								<Route path="settings" element={<ProfileSettingsPage />} />
-							</Route>
+							{/* Unified Layout untuk semua role (admin, admin_cabang, member) */}
+							<Route element={<MainLayout />}>
+								{/* Admin Routes */}
+								<Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+								<Route path="/admin/cabang" element={<BranchManagementPage />} />
+								<Route path="/admin/cabang/:id" element={<BranchDetailPage />} />
+								<Route path="/admin/users" element={<UserManagementPage />} />
+								<Route path="/admin/member/:id" element={<MemberDetailPage />} />
+								<Route path="/admin/feedback" element={<FeedbackPage />} />
+								<Route path="/admin/articles" element={<ArticleManagementPage />} />
+								<Route path="/admin/articles/:id" element={<ArticleEditorPage />} />
+								<Route path="/admin/hero-gallery" element={<HeroGalleryManagementPage />} />
+								<Route path="/admin/pertandingan" element={<MatchManagementPage />} />
+								<Route path="/admin/pertandingan/edit/:id" element={<MatchEditorPage />} />
+								<Route path="/admin/pertandingan/:id" element={<MatchEditorPage />} />
+								<Route path="/admin/settings" element={<ProfileSettingsPage />} />
 
-							{/* PERUBAHAN DI SINI: Rute untuk Admin Cabang dibungkus layout baru */}
-							<Route element={<BranchAdminLayout />}>
+								{/* Admin Cabang Routes */}
 								<Route path="/absensi" element={<AttendancePage />} />
 								<Route path="/jadwal" element={<ScheduleManagementPage />} />
 								<Route path="/members" element={<MemberListPage />} />
-								<Route path="feedback" element={<FeedbackPage />} />
 								<Route path="/laporan" element={<AttendanceReportPage />} />
-								<Route
-									path="/cabang/settings"
-									element={<ProfileSettingsPage />}
-								/>
-								<Route
-									path="branch/member/:id"
-									element={<MemberDetailPage />}
-								/>
-							</Route>
+								<Route path="/feedback" element={<FeedbackPage />} />
+								<Route path="/cabang/settings" element={<ProfileSettingsPage />} />
+								<Route path="/branch/member/:id" element={<MemberDetailPage />} />
 
-							<Route element={<MemberLayout />}>
+								{/* Member Routes */}
 								<Route path="/profil" element={<MyProfilePage />} />
 								<Route path="/rapor" element={<MemberReportListPage />} />
 								<Route path="/pembayaran" element={<PaymentPage />} />
-								<Route
-									path="/feedback-saya"
-									element={<FeedbackHistoryPage />}
-								/>
-								<Route
-									path="/member/settings"
-									element={<ProfileSettingsPage />}
-								/>
+								<Route path="/feedback-saya" element={<FeedbackHistoryPage />} />
+								<Route path="/member/settings" element={<ProfileSettingsPage />} />
 							</Route>
 						</Route>
 						<Route path="*" element={<NotFoundPage />} />
 					</Routes>
+					</Suspense>
 				</AxiosInterceptor>
 			</AuthProvider>
 		</Router>

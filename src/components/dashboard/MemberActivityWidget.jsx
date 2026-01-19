@@ -4,6 +4,8 @@ import axios from "axios";
 import { FiUserPlus, FiUserX, FiChevronDown } from "react-icons/fi";
 import { Link } from "react-router-dom";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 const AccordionBranchList = ({ title, icon, dataByBranch }) => {
 	const [openBranch, setOpenBranch] = useState(null);
 	const toggleBranch = (branchName) =>
@@ -44,10 +46,11 @@ const AccordionBranchList = ({ title, icon, dataByBranch }) => {
 												>
 													<img
 														src={
-															m.avatar ||
-															`https://placehold.co/40x40/E0E0E0/757575?text=${m.full_name.charAt(
-																0
-															)}`
+															m.avatar
+																? `${API_BASE_URL}${m.avatar}`
+																: `https://placehold.co/40x40/E0E0E0/757575?text=${m.full_name.charAt(
+																		0,
+																	)}`
 														}
 														alt={m.full_name}
 														className="w-10 h-10 rounded-full object-cover"
@@ -110,7 +113,7 @@ const MemberActivityWidget = () => {
 
 	const fetchData = useCallback(() => {
 		axios
-			.get("/api/admin/dashboard_activity_data.php", {
+			.get("/api/admin/dashboard-activity-data", {
 				params: { month, year },
 			})
 			.then((res) => setData(res.data))

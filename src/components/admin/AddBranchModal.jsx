@@ -20,7 +20,7 @@ const AddBranchModal = ({ isOpen, onClose, refetch }) => {
 		setError("");
 
 		try {
-			await axios.post("/api/branches/create.php", { name, address });
+			await axios.post("/api/branches/create", { name, address });
 			alert("Cabang baru berhasil ditambahkan!");
 			refetch();
 			onClose();

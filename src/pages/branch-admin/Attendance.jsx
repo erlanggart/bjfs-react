@@ -1,12 +1,22 @@
 // File: src/pages/branch-admin/AttendancePage.jsx
 import React, { useState, useEffect, useCallback } from "react";
-import axios from "axios";
+import api from "../../services/api";
 import Swal from "sweetalert2";
 import { Html5QrcodeScanner } from "html5-qrcode";
-import { FiCheck, FiSearch, FiUser, FiClock } from "react-icons/fi";
+import {
+	FiCheck,
+	FiSearch,
+	FiUser,
+	FiClock,
+	FiArrowLeft,
+	FiChevronLeft,
+	FiCalendar,
+} from "react-icons/fi";
 import { FaQrcode } from "react-icons/fa";
 import { useDebounce } from "use-debounce";
 import { Link } from "react-router-dom";
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 // Komponen untuk Tombol Status
 const StatusButton = ({ status, currentStatus, onClick }) => {
@@ -50,27 +60,41 @@ const StatusButton = ({ status, currentStatus, onClick }) => {
 const SelfAttendanceCard = ({ schedule, onAttendanceSubmit }) => {
 	const [adminAttendance, setAdminAttendance] = useState(null);
 	const [isLoading, setIsLoading] = useState(false);
+	const [userProfile, setUserProfile] = useState({
+		avatar: null,
+		full_name: "",
+	});
 
-	// Fetch admin attendance status untuk schedule ini
+	// Fetch admin attendance status dan profile untuk schedule ini
 	useEffect(() => {
-		const fetchAdminAttendance = async () => {
+		const fetchData = async () => {
 			if (!schedule) return;
 			try {
-				const response = await axios.get(
-					`/api/attendance/admin_status.php?schedule_id=${schedule.id}`
+				// Fetch attendance status
+				const attendanceResponse = await api.get(
+					`/api/attendance/admin_status?schedule_id=${schedule.id}`,
 				);
-				setAdminAttendance(response.data.status);
+				setAdminAttendance(attendanceResponse.data.status);
+
+				// Fetch user profile
+				const profileResponse = await api.get("/api/users/my-profile");
+				if (profileResponse.data.profile) {
+					setUserProfile({
+						avatar: profileResponse.data.profile.avatar,
+						full_name: profileResponse.data.profile.full_name || "Admin",
+					});
+				}
 			} catch (error) {
-				console.error("Failed to fetch admin attendance:", error);
+				console.error("Failed to fetch data:", error);
 			}
 		};
-		fetchAdminAttendance();
+		fetchData();
 	}, [schedule]);
 
 	const handleAdminAttendance = async (status) => {
 		setIsLoading(true);
 		try {
-			await axios.post("/api/attendance/admin_record.php", {
+			await api.post("/api/attendance/admin_record", {
 				schedule_id: schedule.id,
 				status: status,
 			});
@@ -87,7 +111,7 @@ const SelfAttendanceCard = ({ schedule, onAttendanceSubmit }) => {
 				timer: 2000,
 				showConfirmButton: false,
 			});
-		} catch (error) {
+		} catch {
 			Swal.fire("Error", "Gagal menyimpan absensi admin.", "error");
 		} finally {
 			setIsLoading(false);
@@ -101,12 +125,20 @@ const SelfAttendanceCard = ({ schedule, onAttendanceSubmit }) => {
 			{/* Header Section */}
 			<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
 				<div className="flex items-center gap-3">
-					<div className="bg-white bg-opacity-20 p-2 rounded-full flex-shrink-0">
-						<FiUser className="w-5 h-5 sm:w-6 sm:h-6" />
-					</div>
+					{userProfile.avatar ? (
+						<img
+							src={userProfile.avatar}
+							alt={userProfile.full_name}
+							className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-cover border-2 border-white/30 flex-shrink-0"
+						/>
+					) : (
+						<div className="bg-white bg-opacity-20 p-2 rounded-full flex-shrink-0">
+							<FiUser className="w-5 h-5 sm:w-6 sm:h-6" />
+						</div>
+					)}
 					<div className="min-w-0 flex-1">
 						<h3 className="font-semibold text-sm sm:text-base">
-							Absensi Pelatih
+							{userProfile.full_name}
 						</h3>
 						<p className="text-xs sm:text-sm opacity-90">
 							<FiClock className="inline w-3 h-3 sm:w-4 sm:h-4 mr-1" />
@@ -126,7 +158,7 @@ const SelfAttendanceCard = ({ schedule, onAttendanceSubmit }) => {
 						</span>
 					)}
 
-					<div className="flex gap-2 justify-center sm:justify-start">
+					<div className="flex gap-8 justify-center sm:justify-start">
 						<StatusButton
 							status="hadir"
 							currentStatus={adminAttendance}
@@ -166,10 +198,10 @@ const QrScanner = ({ onScanSuccess }) => {
 		const scanner = new Html5QrcodeScanner(
 			"qr-reader-container",
 			{ fps: 10, qrbox: { width: 250, height: 250 } },
-			false // verbose
+			false, // verbose
 		);
 
-		const handleSuccess = (decodedText, decodedResult) => {
+		const handleSuccess = (decodedText) => {
 			scanner
 				.clear()
 				.catch((err) => console.error("Gagal membersihkan scanner.", err));
@@ -177,7 +209,7 @@ const QrScanner = ({ onScanSuccess }) => {
 		};
 
 		const handleError = (error) => {
-			/* Abaikan error umum */
+			console.warn("QR Code scan error:", error);
 		};
 
 		scanner.render(handleSuccess, handleError);
@@ -187,7 +219,7 @@ const QrScanner = ({ onScanSuccess }) => {
 				scanner
 					.clear()
 					.catch((err) =>
-						console.error("Gagal membersihkan scanner saat cleanup.", err)
+						console.error("Gagal membersihkan scanner saat cleanup.", err),
 					);
 			}
 		};
@@ -206,13 +238,18 @@ const AttendancePage = () => {
 	const [attendanceStatus, setAttendanceStatus] = useState({});
 	const [searchTerm, setSearchTerm] = useState("");
 	const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
+	const [branchName, setBranchName] = useState("");
+	const [userName, setUserName] = useState("");
 
 	// Fungsi ini HANYA untuk saat jadwal pertama kali dipilih
 	const handleSelectSchedule = useCallback(async (schedule) => {
 		setSelectedSchedule(schedule);
 		setSearchTerm(""); // Reset pencarian saat ganti jadwal
+		if (schedule.branch_name) {
+			setBranchName(schedule.branch_name);
+		}
 		try {
-			const response = await axios.get(`/api/attendance/list_members.php`, {
+			const response = await api.get(`/api/attendance/list_members`, {
 				params: { schedule_id: schedule.id, search: "" },
 			});
 
@@ -229,7 +266,7 @@ const AttendancePage = () => {
 			});
 			setAttendanceStatus(initialStatus);
 			setView("list");
-		} catch (error) {
+		} catch {
 			Swal.fire("Error", "Gagal memuat daftar member.", "error");
 		}
 	}, []);
@@ -243,7 +280,7 @@ const AttendancePage = () => {
 					member.full_name
 						.toLowerCase()
 						.includes(debouncedSearchTerm.toLowerCase()) ||
-					member.id.toString().includes(debouncedSearchTerm)
+					member.id.toString().includes(debouncedSearchTerm),
 			);
 			setFilteredMembers(filtered);
 		} else {
@@ -254,9 +291,39 @@ const AttendancePage = () => {
 
 	const fetchSchedules = useCallback(async () => {
 		try {
-			const response = await axios.get("/api/schedules/today.php");
-			setSchedules(Array.isArray(response.data) ? response.data : []);
-		} catch (error) {
+			const response = await api.get("/api/schedules/today");
+			const schedulesData = Array.isArray(response.data) ? response.data : [];
+			setSchedules(schedulesData);
+
+			// Fetch branch info dari profile user
+			try {
+				const profileResponse = await api.get("/api/users/my-profile");
+				if (profileResponse.data.profile) {
+					const profile = profileResponse.data.profile;
+
+					// Set user name
+					if (profile.full_name) {
+						setUserName(profile.full_name);
+					}
+
+					// Set branch name
+					if (profile.branch_id) {
+						const branchResponse = await api.get(
+							`/api/branches/${profile.branch_id}`,
+						);
+						if (branchResponse.data.success && branchResponse.data.data) {
+							setBranchName(branchResponse.data.data.name);
+						}
+					}
+				}
+			} catch (error) {
+				console.error("Failed to fetch branch info:", error);
+				// Fallback to branch_name from schedule if available
+				if (schedulesData.length > 0 && schedulesData[0].branch_name) {
+					setBranchName(schedulesData[0].branch_name);
+				}
+			}
+		} catch {
 			Swal.fire("Error", "Gagal memuat jadwal hari ini.", "error");
 		}
 	}, []);
@@ -271,27 +338,27 @@ const AttendancePage = () => {
 
 	const handleSubmitManual = async () => {
 		const membersToSubmit = Object.entries(attendanceStatus).map(
-			([id, status]) => ({ id, status })
+			([id, status]) => ({ id, status }),
 		);
 		if (membersToSubmit.length === 0) {
 			Swal.fire("Info", "Pilih status minimal untuk satu member.", "info");
 			return;
 		}
 		try {
-			await axios.post("/api/attendance/record.php", {
+			await api.post("/api/attendance/record", {
 				schedule_id: selectedSchedule.id,
 				members: membersToSubmit,
 			});
 			Swal.fire("Sukses!", "Absensi berhasil disimpan.", "success");
 			handleSelectSchedule(selectedSchedule);
-		} catch (error) {
+		} catch {
 			Swal.fire("Error", "Gagal menyimpan absensi.", "error");
 		}
 	};
 
 	const processScanResult = async (memberId) => {
 		try {
-			await axios.post("/api/attendance/record.php", {
+			await api.post("/api/attendance/record", {
 				schedule_id: selectedSchedule.id,
 				member_id: memberId,
 			});
@@ -303,11 +370,11 @@ const AttendancePage = () => {
 				showConfirmButton: false,
 			});
 			handleSelectSchedule(selectedSchedule);
-		} catch (err) {
+		} catch {
 			Swal.fire(
 				"Gagal!",
 				`Tidak dapat mengabsen member ID ${memberId}. Pastikan ID valid.`,
-				"error"
+				"error",
 			);
 			setView("list");
 		}
@@ -315,29 +382,55 @@ const AttendancePage = () => {
 
 	if (view === "schedule") {
 		return (
-			<div className="p-4 bg-gray-100 min-h-screen">
-				<h1 className="text-2xl font-bold text-gray-800 mb-4">
-					Pilih Jadwal Latihan Hari Ini
-				</h1>
-				{schedules.length > 0 ? (
-					schedules.map((s) => (
-						<div
-							key={s.id}
-							onClick={() => handleSelectSchedule(s)}
-							className="bg-white p-4 rounded-lg shadow-md mb-3 cursor-pointer active:scale-95 transition-transform"
-						>
-							<p className="font-bold text-lg text-primary">{s.age_group}</p>
-							<p className="text-sm text-gray-600">{s.location}</p>
-							<p className="text-sm text-secondary font-semibold">
-								{s.start_time.substring(0, 5)} - {s.end_time.substring(0, 5)}
-							</p>
+			<div>
+				{branchName && (
+					<div className="lg:mt-4 lg:rounded-t-lg bg-gradient-to-r from-[var(--color-primary)] to-blue-700 h-[30vh] rounded-b-lg p-6 mb-4 shadow-lg flex flex-col justify-center">
+						<p className="text-white/90 text-sm font-medium mb-2">
+							Selamat Datang,
+						</p>
+						<h2 className="text-white text-3xl font-bold mb-3">
+							{userName || "Admin"}
+						</h2>
+						<div className="flex items-center gap-2">
+							<div className="bg-white/20 rounded-full px-3 py-1">
+								<p className="text-white text-xs font-medium">Cabang</p>
+							</div>
+							<p className="text-white text-xl font-semibold">{branchName}</p>
 						</div>
-					))
-				) : (
-					<p className="text-center text-gray-500 mt-8">
-						Tidak ada jadwal latihan hari ini.
-					</p>
+					</div>
 				)}
+				<div className="px-4 md:px-0">
+					<Link
+						to="/jadwal"
+						className="flex items-center justify-center gap-2 px-4 py-2 bg-primary text-white rounded-lg font-semibold shadow-sm hover:bg-primary-dark"
+					>
+						<FiCalendar /> Atur Jadwal
+					</Link>
+				</div>
+				<div className="m-4 lg:m-0 p-4 bg-gray-100 ">
+					<h1 className="text-2xl font-bold text-gray-800 mb-4">
+						Pilih Jadwal Latihan Hari Ini
+					</h1>
+					{schedules.length > 0 ? (
+						schedules.map((s) => (
+							<div
+								key={s.id}
+								onClick={() => handleSelectSchedule(s)}
+								className="bg-white p-4 rounded-lg shadow-md mb-3 cursor-pointer active:scale-95 transition-transform"
+							>
+								<p className="font-bold text-lg text-primary">{s.age_group}</p>
+								<p className="text-sm text-gray-600">{s.location}</p>
+								<p className="text-sm text-secondary font-semibold">
+									{s.start_time.substring(0, 5)} - {s.end_time.substring(0, 5)}
+								</p>
+							</div>
+						))
+					) : (
+						<p className="text-center text-gray-500 mt-8">
+							Tidak ada jadwal latihan hari ini.
+						</p>
+					)}
+				</div>
 			</div>
 		);
 	}
@@ -360,12 +453,17 @@ const AttendancePage = () => {
 
 	return (
 		<div className="p-4 bg-gray-100 min-h-screen">
-			<button
-				onClick={() => setView("schedule")}
-				className="text-sm text-secondary mb-2"
-			>
-				‹ Kembali pilih jadwal
-			</button>
+			{branchName && (
+				<div className="flex space-x-3 bg-gradient-to-r from-[var(--color-primary)] to-blue-700 rounded-lg p-3 mb-3 shadow-lg">
+					<button onClick={() => setView("schedule")} className="text-white">
+						<FiChevronLeft size={25} />
+					</button>
+					<div>
+						<p className="text-white text-xs font-medium mb-0.5">Cabang</p>
+						<h2 className="text-white text-lg font-bold">{branchName}</h2>
+					</div>
+				</div>
+			)}
 			<h1 className="text-xl font-bold text-gray-800">
 				{selectedSchedule.age_group}
 			</h1>
@@ -416,10 +514,11 @@ const AttendancePage = () => {
 					>
 						<img
 							src={
-								m.avatar ||
-								`https://placehold.co/48x48/E0E0E0/757575?text=${m.full_name.charAt(
-									0
-								)}`
+								m.avatar
+									? `${API_BASE_URL}${m.avatar}`
+									: `https://placehold.co/48x48/E0E0E0/757575?text=${m.full_name.charAt(
+											0,
+										)}`
 							}
 							alt={m.full_name}
 							className="w-16 h-16 rounded-full object-cover flex-shrink-0"

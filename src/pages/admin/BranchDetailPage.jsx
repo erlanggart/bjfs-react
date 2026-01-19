@@ -29,7 +29,7 @@ const EditableBranchInfo = ({ branchInfo, refetch }) => {
 	const [address, setAddress] = useState(branchInfo.address || "");
 	const [loading, setLoading] = useState(false);
 	const [reportTemplate, setReportTemplate] = useState(
-		branchInfo.report_template
+		branchInfo.report_template,
 	);
 
 	const handleSave = async () => {
@@ -39,7 +39,7 @@ const EditableBranchInfo = ({ branchInfo, refetch }) => {
 		}
 		setLoading(true);
 		try {
-			await axios.post("/api/branches/update.php", {
+			await axios.put(`/api/branches/${branchInfo.id}`, {
 				id: branchInfo.id,
 				name,
 				address,
@@ -52,7 +52,7 @@ const EditableBranchInfo = ({ branchInfo, refetch }) => {
 			Swal.fire(
 				"Gagal!",
 				err.response?.data?.message || "Gagal memperbarui cabang.",
-				"error"
+				"error",
 			);
 		} finally {
 			setLoading(false);
@@ -155,7 +155,7 @@ const BranchDetailPage = () => {
 	const fetchData = useCallback(async () => {
 		setLoading(true);
 		try {
-			const response = await axios.get(`/api/branches/detail.php`, {
+			const response = await axios.get(`/api/branches/detail`, {
 				params: { id, page: currentPage, search: debouncedSearchTerm },
 			});
 			setBranchData(response.data);
@@ -190,7 +190,7 @@ const BranchDetailPage = () => {
 		}).then(async (result) => {
 			if (result.isConfirmed) {
 				try {
-					await axios.post("/api/admin/remove_admin.php", {
+					await axios.post("/api/admin/remove-admin", {
 						user_id: admin.user_id,
 					});
 					Swal.fire("Dihapus!", "Admin telah dihapus.", "success");
@@ -199,7 +199,7 @@ const BranchDetailPage = () => {
 					Swal.fire(
 						"Gagal!",
 						err.response?.data?.message || "Gagal menghapus admin.",
-						"error"
+						"error",
 					);
 				}
 			}
@@ -208,7 +208,7 @@ const BranchDetailPage = () => {
 
 	const handleToggleStatus = async (member) => {
 		try {
-			await axios.post("/api/members/toggle_status.php", {
+			await axios.put(`/api/members/toggle-status/${member.id}`, {
 				member_id: member.id,
 			});
 			Swal.fire({
@@ -224,7 +224,7 @@ const BranchDetailPage = () => {
 			Swal.fire(
 				"Gagal!",
 				err.response?.data?.message || "Gagal mengubah status.",
-				"error"
+				"error",
 			);
 		}
 	};
@@ -271,7 +271,7 @@ const BranchDetailPage = () => {
 										<div className="flex items-center gap-3">
 											<img
 												src={`https://placehold.co/40x40/E0E0E0/757575?text=${admin.full_name.charAt(
-													0
+													0,
 												)}`}
 												alt={admin.full_name}
 												className="w-10 h-10 rounded-full object-cover "
@@ -360,12 +360,12 @@ const BranchDetailPage = () => {
 										<img
 											src={
 												member.avatar
-													? `${member.avatar}` // If avatar exists, combine with base URL
+													? `${API_BASE_URL}${member.avatar}`
 													: `https://placehold.co/128x128/E0E0E0/757575?text=${
 															member.full_name
 																? member.full_name.charAt(0)
 																: "U"
-													  }` // Otherwise, use the placeholder URL directly
+														}`
 											}
 											alt={member.full_name}
 											className="w-14 h-14 rounded-full object-cover"

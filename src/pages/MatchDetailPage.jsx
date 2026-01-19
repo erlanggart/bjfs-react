@@ -12,16 +12,19 @@ import {
 import Header from "../layouts/Header";
 import { Footer } from "../layouts/Footer";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 const PlayerCard = ({ player }) => (
 	<div className="w-42 flex-shrink-0 bg-gradient-to-b from-[var(--color-primary)] to-blue-900 text-white  rounded-lg shadow-lg text-center p-3 relative overflow-hidden group">
 		<div className="relative z-10">
 			<div className="w-30 h-30 rounded-full mx-auto bg-white/10 p-1 border-2 border-white/20">
 				<img
 					src={
-						player.avatar ||
-						`https://placehold.co/80x80/E0E0E0/757575?text=${player.player_name.charAt(
-							0
-						)}`
+						player.avatar
+							? `${API_BASE_URL}${player.avatar}`
+							: `https://placehold.co/80x80/E0E0E0/757575?text=${player.player_name.charAt(
+									0,
+								)}`
 					}
 					alt={player.player_name}
 					className="w-full h-full rounded-full object-cover"

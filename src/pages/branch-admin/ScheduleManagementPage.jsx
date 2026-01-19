@@ -1,6 +1,6 @@
 // File: src/pages/branch-admin/ScheduleManagementPage.jsx
 import React, { useState, useEffect, useCallback } from "react";
-import axios from "axios";
+import api from "../../services/api";
 import Swal from "sweetalert2";
 import { FiPlus, FiEdit, FiClock, FiPower } from "react-icons/fi";
 import { Link } from "react-router-dom";
@@ -51,19 +51,17 @@ const ScheduleModal = ({ isOpen, onClose, refetch, scheduleData }) => {
 	const handleSubmit = async (e) => {
 		e.preventDefault();
 		setLoading(true);
-		const url = isEditMode
-			? "/api/schedules/update.php"
-			: "/api/schedules/create.php";
+		const url = isEditMode ? "/api/schedules/update" : "/api/schedules/create";
 		const payload = isEditMode
 			? { ...formData, id: scheduleData.id }
 			: formData;
 
 		try {
-			await axios.post(url, payload);
+			await api.post(url, payload);
 			Swal.fire(
 				"Berhasil!",
 				`Jadwal telah berhasil ${isEditMode ? "diperbarui" : "dibuat"}.`,
-				"success"
+				"success",
 			);
 			refetch();
 			onClose();
@@ -71,7 +69,7 @@ const ScheduleModal = ({ isOpen, onClose, refetch, scheduleData }) => {
 			Swal.fire(
 				"Gagal!",
 				err.response?.data?.message || "Terjadi kesalahan.",
-				"error"
+				"error",
 			);
 		} finally {
 			setLoading(false);
@@ -201,7 +199,7 @@ const ScheduleManagementPage = () => {
 	const fetchSchedules = useCallback(async () => {
 		setLoading(true);
 		try {
-			const response = await axios.get("/api/schedules/list_by_branch.php");
+			const response = await api.get("/api/schedules/list_by_branch");
 			setSchedules(response.data);
 		} catch {
 			Swal.fire("Error", "Gagal memuat data jadwal.", "error");
@@ -226,13 +224,15 @@ const ScheduleManagementPage = () => {
 
 	const handleToggleStatus = (schedule) => {
 		const action = schedule.is_active === 1 ? "nonaktifkan" : "aktifkan";
-		const actionPast = schedule.is_active === 1 ? "dinonaktifkan" : "diaktifkan";
-		
+		const actionPast =
+			schedule.is_active === 1 ? "dinonaktifkan" : "diaktifkan";
+
 		Swal.fire({
 			title: `${action === "nonaktifkan" ? "Nonaktifkan" : "Aktifkan"} Jadwal?`,
-			text: action === "nonaktifkan" 
-				? "Jadwal tidak akan muncul di halaman absensi, tapi data absensi lama tetap tersimpan."
-				: "Jadwal akan kembali muncul di halaman absensi.",
+			text:
+				action === "nonaktifkan"
+					? "Jadwal tidak akan muncul di halaman absensi, tapi data absensi lama tetap tersimpan."
+					: "Jadwal akan kembali muncul di halaman absensi.",
 			icon: "question",
 			showCancelButton: true,
 			confirmButtonColor: action === "nonaktifkan" ? "#d33" : "#10b981",
@@ -241,20 +241,16 @@ const ScheduleManagementPage = () => {
 		}).then(async (result) => {
 			if (result.isConfirmed) {
 				try {
-					await axios.post("/api/schedules/toggle_status.php", { 
-						id: schedule.id 
+					await api.post("/api/schedules/toggle_status", {
+						id: schedule.id,
 					});
-					Swal.fire(
-						"Berhasil!", 
-						`Jadwal telah ${actionPast}.`, 
-						"success"
-					);
+					Swal.fire("Berhasil!", `Jadwal telah ${actionPast}.`, "success");
 					fetchSchedules();
 				} catch (err) {
 					Swal.fire(
 						"Gagal!",
 						err.response?.data?.message || `Gagal ${action} jadwal.`,
-						"error"
+						"error",
 					);
 				}
 			}
@@ -262,7 +258,15 @@ const ScheduleManagementPage = () => {
 	};
 
 	return (
-		<div className="p-4 bg-gray-100 min-h-screen">
+		<div className="p-4">
+			<div className="bg-primary p-4 mb-6 rounded-lg">
+				<h1 className="text-3xl font-bold text-center text-white">
+					Manajemen Jadwal Latihan
+				</h1>
+				<p className="text-center text-gray-200 mt-2">
+					Mengelola jadwal latihan untuk berbagai kelompok usia.
+				</p>
+			</div>
 			<ScheduleModal
 				isOpen={isModalOpen}
 				onClose={() => setIsModalOpen(false)}
@@ -294,7 +298,9 @@ const ScheduleManagementPage = () => {
 							>
 								<div className="flex-1">
 									<div className="flex items-center gap-2 mb-1">
-										<p className={`font-bold text-lg ${s.is_active === 1 ? "text-primary" : "text-gray-400"}`}>
+										<p
+											className={`font-bold text-lg ${s.is_active === 1 ? "text-primary" : "text-gray-400"}`}
+										>
 											{s.age_group} - {s.day_of_week}
 										</p>
 										<span
@@ -312,7 +318,9 @@ const ScheduleManagementPage = () => {
 										{s.end_time.substring(0, 5)}
 									</p>
 									{s.location && (
-										<p className="text-xs text-gray-500 mt-1">📍 {s.location}</p>
+										<p className="text-xs text-gray-500 mt-1">
+											📍 {s.location}
+										</p>
 									)}
 								</div>
 								<div className="flex gap-2">
@@ -330,7 +338,11 @@ const ScheduleManagementPage = () => {
 												? "text-orange-600 hover:bg-orange-50"
 												: "text-green-600 hover:bg-green-50"
 										}`}
-										title={s.is_active === 1 ? "Nonaktifkan Jadwal" : "Aktifkan Jadwal"}
+										title={
+											s.is_active === 1
+												? "Nonaktifkan Jadwal"
+												: "Aktifkan Jadwal"
+										}
 									>
 										<FiPower size={18} />
 									</button>

@@ -12,7 +12,7 @@ const MemberReportListPage = () => {
 	useEffect(() => {
 		const fetchReports = async () => {
 			try {
-				const response = await axios.get("/api/members/my_evaluations.php");
+				const response = await axios.get("/api/members/my-evaluations");
 				setReports(response.data.evaluations);
 				setMemberInfo(response.data.member_info);
 			} catch (error) {

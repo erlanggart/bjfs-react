@@ -1,6 +1,6 @@
 // File: src/pages/branch-admin/AttendanceReportPage.jsx
 import React, { useState, useEffect, useMemo } from "react";
-import axios from "axios";
+import api from "../../services/api";
 import {
 	FiUsers,
 	FiCheck,
@@ -44,8 +44,8 @@ const AttendanceReportPage = () => {
 		setReport([]);
 		setSelectedSession(null);
 		try {
-			const response = await axios.get(
-				`/api/attendance/monthly_summary.php?month=${month}&year=${year}`
+			const response = await api.get(
+				`/api/attendance/monthly_summary?month=${month}&year=${year}`,
 			);
 			setSessions(response.data);
 		} catch (error) {
@@ -64,8 +64,8 @@ const AttendanceReportPage = () => {
 		setActiveTab("all");
 		setLoading((prev) => ({ ...prev, report: true }));
 		try {
-			const response = await axios.get(
-				`/api/attendance/report.php?schedule_id=${session.schedule_id}&date=${session.attendance_date}`
+			const response = await api.get(
+				`/api/attendance/report?schedule_id=${session.schedule_id}&date=${session.attendance_date}`,
 			);
 			setReport(response.data);
 		} catch (error) {
@@ -88,7 +88,7 @@ const AttendanceReportPage = () => {
 		}).then(async (result) => {
 			if (result.isConfirmed) {
 				try {
-					await axios.post("/api/attendance/delete_by_session.php", {
+					await api.post("/api/attendance/delete_by_session", {
 						schedule_id: selectedSession.schedule_id,
 						attendance_date: selectedSession.attendance_date,
 					});
@@ -98,7 +98,7 @@ const AttendanceReportPage = () => {
 					Swal.fire(
 						"Gagal!",
 						err.response?.data?.message || "Gagal menghapus laporan.",
-						"error"
+						"error",
 					);
 				}
 			}
@@ -129,7 +129,7 @@ const AttendanceReportPage = () => {
 				}
 				return acc;
 			},
-			{ hadir: 0, sakit: 0, izin: 0, alpa: 0 }
+			{ hadir: 0, sakit: 0, izin: 0, alpa: 0 },
 		);
 	}, [report]);
 
@@ -203,10 +203,12 @@ const AttendanceReportPage = () => {
 	);
 
 	return (
-		<div className="p-4 bg-gray-100 min-h-screen">
-			<h1 className="text-2xl font-bold text-gray-800 mb-4">
-				Laporan Absensi Bulanan
-			</h1>
+		<div className="p-4 ">
+			<div className="bg-primary p-4 mb-6 rounded-lg">
+				<h1 className="text-2xl font-bold text-white">
+					Laporan Absensi Bulanan
+				</h1>
+			</div>
 
 			<div className="grid grid-cols-2 gap-4 mb-6 bg-white p-4 rounded-lg shadow-sm">
 				<div>
@@ -256,56 +258,69 @@ const AttendanceReportPage = () => {
 									if (!acc[date]) acc[date] = [];
 									acc[date].push(session);
 									return acc;
-								}, {})
-							).map(([date, sessionsOnDate]) => (
-								<div key={date}>
-									<p className="font-semibold text-gray-600 text-sm mb-1">
-										{new Date(date + "T00:00:00").toLocaleDateString("id-ID", {
-											weekday: "long",
-											day: "numeric",
-											month: "long",
-										})}
-									</p>
-									<div className="space-y-1">
-										{sessionsOnDate.map((session) => {
-											// PERBAIKAN: Logika untuk menampilkan rentang usia
-											let ageRangeText = "";
-											if (session.min_age && session.max_age) {
-												ageRangeText = ` (Usia ${session.min_age}-${session.max_age} Thn)`;
-											} else if (session.min_age) {
-												ageRangeText = ` (Usia ${session.min_age}+ Thn)`;
-											} else if (session.max_age) {
-												ageRangeText = ` (Usia s/d ${session.max_age} Thn)`;
-											}
+								}, {}),
+							).map(([date, sessionsOnDate]) => {
+								// Parse date safely - date should be in format YYYY-MM-DD from backend
+								const parseDate = (dateStr) => {
+									// Ensure we have valid date string
+									if (!dateStr) return new Date();
+									// Try parsing as YYYY-MM-DD or full ISO string
+									const d = new Date(
+										dateStr.includes("T") ? dateStr : dateStr + "T00:00:00",
+									);
+									// Fallback if invalid
+									return isNaN(d.getTime()) ? new Date() : d;
+								};
+								return (
+									<div key={date}>
+										<p className="font-semibold text-gray-600 text-sm mb-1">
+											{parseDate(date).toLocaleDateString("id-ID", {
+												weekday: "long",
+												day: "numeric",
+												month: "long",
+											})}
+										</p>
+										<div className="space-y-1">
+											{sessionsOnDate.map((session) => {
+												// PERBAIKAN: Logika untuk menampilkan rentang usia
+												let ageRangeText = "";
+												if (session.min_age && session.max_age) {
+													ageRangeText = ` (Usia ${session.min_age}-${session.max_age} Thn)`;
+												} else if (session.min_age) {
+													ageRangeText = ` (Usia ${session.min_age}+ Thn)`;
+												} else if (session.max_age) {
+													ageRangeText = ` (Usia s/d ${session.max_age} Thn)`;
+												}
 
-											return (
-												<button
-													key={session.schedule_id}
-													onClick={() => handleSelectSession(session)}
-													className={`w-full text-left p-2 rounded-md text-sm ${
-														selectedSession?.schedule_id ===
-															session.schedule_id &&
-														selectedSession?.attendance_date ===
-															session.attendance_date
-															? "bg-secondary text-white"
-															: "bg-white hover:bg-gray-50"
-													}`}
-												>
-													<span className="font-semibold">
-														{session.age_group}
-													</span>
-													<span className="text-xs opacity-75">
-														{ageRangeText}
-													</span>
-													<span className="block text-xs">
-														({session.start_time.slice(0, 5)})
-													</span>
-												</button>
-											);
-										})}
+												return (
+													<button
+														key={session.schedule_id}
+														onClick={() => handleSelectSession(session)}
+														className={`w-full text-left p-2 rounded-md text-sm ${
+															selectedSession?.schedule_id ===
+																session.schedule_id &&
+															selectedSession?.attendance_date ===
+																session.attendance_date
+																? "bg-secondary text-white"
+																: "bg-white hover:bg-gray-50"
+														}`}
+													>
+														<span className="font-semibold">
+															{session.age_group}
+														</span>
+														<span className="text-xs opacity-75">
+															{ageRangeText}
+														</span>
+														<span className="block text-xs">
+															({session.start_time.slice(0, 5)})
+														</span>
+													</button>
+												);
+											})}
+										</div>
 									</div>
-								</div>
-							))
+								);
+							})
 						) : (
 							<p className="text-sm text-gray-500">
 								Tidak ada data absensi di bulan ini.
@@ -361,7 +376,7 @@ const AttendanceReportPage = () => {
 
 									{/* Sub-tabs Section */}
 									{["attended", "hadir", "sakit", "izin", "alpa"].includes(
-										activeTab
+										activeTab,
 									) && (
 										<div className="border-b border-secondary flex items-center p-2 bg-gray-50 space-x-2 overflow-y-auto">
 											<SubTabButton

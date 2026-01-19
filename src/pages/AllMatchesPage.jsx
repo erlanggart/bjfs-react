@@ -1,7 +1,7 @@
 // File: src/pages/AllMatchesPage.jsx
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
+import api from "../services/api";
 import { FiArrowLeft, FiCalendar } from "react-icons/fi";
 import { Footer } from "../layouts/Footer";
 import Header from "../layouts/Header";
@@ -41,7 +41,7 @@ const AllMatchesPage = () => {
 		const fetchAllMatches = async () => {
 			try {
 				// Panggil API tanpa limit untuk mendapatkan semua data
-				const response = await axios.get("/api/matches/public");
+				const response = await api.get("/api/matches/public");
 				setMatches(response.data);
 			} catch (error) {
 				console.error("Gagal memuat semua pertandingan", error);

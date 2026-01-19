@@ -1,5 +1,5 @@
 // File: src/pages/member/PaymentPage.jsx
-import React, { useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import {
@@ -19,6 +19,7 @@ import FeedbackForm from "../../components/FeedbackForm";
 // Komponen untuk Modal Unggah Pembayaran
 const UploadPaymentModal = ({ isOpen, onClose, onUploadSuccess }) => {
 	const [file, setFile] = useState(null);
+	const [paymentType, setPaymentType] = useState("full");
 	const [loading, setLoading] = useState(false);
 
 	const currentDate = new Date();
@@ -39,9 +40,10 @@ const UploadPaymentModal = ({ isOpen, onClose, onUploadSuccess }) => {
 		formData.append("proof", file);
 		formData.append("month", currentMonthNumber);
 		formData.append("year", currentYear);
+		formData.append("payment_type", paymentType);
 
 		try {
-			await axios.post("/api/members/upload_payment.php", formData, {
+			await axios.post("/api/members/upload-payment", formData, {
 				headers: { "Content-Type": "multipart/form-data" },
 			});
 			Swal.fire("Berhasil!", "Bukti pembayaran berhasil diunggah.", "success");
@@ -51,7 +53,7 @@ const UploadPaymentModal = ({ isOpen, onClose, onUploadSuccess }) => {
 			Swal.fire(
 				"Gagal",
 				error.response?.data?.message || "Gagal mengunggah bukti.",
-				"error"
+				"error",
 			);
 		} finally {
 			setLoading(false);
@@ -66,11 +68,38 @@ const UploadPaymentModal = ({ isOpen, onClose, onUploadSuccess }) => {
 					Untuk iuran bulan {currentMonthName}, tahun {currentYear}.
 				</p>
 				<form onSubmit={handleSubmit}>
+					<div className="mb-4">
+						<label className="block text-sm font-semibold text-gray-700 mb-2">
+							Tipe Pembayaran
+						</label>
+						<div className="space-y-2">
+							<label className="flex items-center gap-2 cursor-pointer">
+								<input
+									type="radio"
+									value="full"
+									checked={paymentType === "full"}
+									onChange={(e) => setPaymentType(e.target.value)}
+									className="w-4 h-4"
+								/>
+								<span className="text-sm">Iuran Penuh</span>
+							</label>
+							<label className="flex items-center gap-2 cursor-pointer">
+								<input
+									type="radio"
+									value="cuti"
+									checked={paymentType === "cuti"}
+									onChange={(e) => setPaymentType(e.target.value)}
+									className="w-4 h-4"
+								/>
+								<span className="text-sm">Masa Cuti</span>
+							</label>
+						</div>
+					</div>
 					<input
 						type="file"
 						accept="image/*"
 						onChange={(e) => setFile(e.target.files[0])}
-						className="w-full p-2 border rounded-md"
+						className="w-full p-2 border rounded-md mb-4"
 					/>
 					<div className="flex justify-end gap-4 pt-6">
 						<button
@@ -101,8 +130,8 @@ const PaymentPage = () => {
 	const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
 	const [refreshKey, setRefreshKey] = useState(0);
 	const [paymentStatus, setPaymentStatus] = useState({ show: false });
-	
-	const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+	const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 	// BARU: Fungsi untuk menangani pengiriman kritik dan saran
 
@@ -110,7 +139,7 @@ const PaymentPage = () => {
 		const fetchPaymentData = async () => {
 			setLoading(true);
 			try {
-				const response = await axios.get("/api/members/payment_status.php");
+				const response = await axios.get("/api/members/payment-status");
 				const { member_info, payment_history } = response.data;
 
 				if (Array.isArray(payment_history)) {
@@ -119,7 +148,7 @@ const PaymentPage = () => {
 
 				// Hitung status pembayaran
 				setPaymentStatus(
-					getPaymentStatus(member_info.registration_date, payment_history)
+					getPaymentStatus(member_info.registration_date, payment_history),
 				);
 			} catch (error) {
 				console.error("Gagal memuat data pembayaran", error);
@@ -140,7 +169,7 @@ const PaymentPage = () => {
 
 		// Prioritas 1: Cek bukti pembayaran untuk bulan ini.
 		const proofForThisMonth = paymentHistory?.find(
-			(p) => p.payment_month == currentMonth && p.payment_year == currentYear
+			(p) => p.payment_month == currentMonth && p.payment_year == currentYear,
 		);
 
 		if (proofForThisMonth && proofForThisMonth.status === "pending") {
@@ -166,7 +195,7 @@ const PaymentPage = () => {
 		const nextDueDate = new Date(
 			baseDate.getFullYear(),
 			baseDate.getMonth() + 1,
-			baseDate.getDate()
+			baseDate.getDate(),
 		);
 
 		// 4. Hitung sisa hari.
@@ -197,6 +226,21 @@ const PaymentPage = () => {
 		);
 	};
 
+	const PaymentTypeBadge = ({ paymentType }) => {
+		const styles = {
+			full: { text: "Iuran Penuh", color: "bg-blue-100 text-blue-800" },
+			cuti: { text: "Masa Cuti", color: "bg-purple-100 text-purple-800" },
+		};
+		const current = styles[paymentType] || {};
+		return (
+			<span
+				className={`text-xs px-2 py-0.5 rounded-full font-semibold ${current.color}`}
+			>
+				{current.text}
+			</span>
+		);
+	};
+
 	return (
 		<div className="p-4 sm:p-6">
 			<UploadPaymentModal
@@ -213,8 +257,8 @@ const PaymentPage = () => {
 							paymentStatus.status === "pending"
 								? "bg-blue-100 border-blue-500 text-blue-800"
 								: paymentStatus.isOverdue
-								? "bg-red-100 border-red-500 text-red-800"
-								: "bg-yellow-100 border-yellow-500 text-yellow-800"
+									? "bg-red-100 border-red-500 text-red-800"
+									: "bg-yellow-100 border-yellow-500 text-yellow-800"
 						}`}
 					>
 						<FiAlertCircle size={24} className="flex-shrink-0" />
@@ -228,8 +272,8 @@ const PaymentPage = () => {
 								{paymentStatus.status === "pending"
 									? "Bukti pembayaran Anda sedang diverifikasi oleh admin."
 									: paymentStatus.isOverdue
-									? `Pembayaran iuran telah jatuh tempo.`
-									: `Jatuh tempo pembayaran dalam ${paymentStatus.days} hari lagi.`}
+										? `Pembayaran iuran telah jatuh tempo.`
+										: `Jatuh tempo pembayaran dalam ${paymentStatus.days} hari lagi.`}
 							</p>
 						</div>
 					</div>
@@ -309,8 +353,11 @@ const PaymentPage = () => {
 											{new Date(item.uploaded_at).toLocaleDateString("id-ID")}
 										</p>
 									</div>
-									<div className="flex items-center gap-2">
+									<div className="flex items-center gap-2 flex-wrap">
 										<StatusBadge status={item.status} />
+										{item.payment_type && (
+											<PaymentTypeBadge paymentType={item.payment_type} />
+										)}
 										{item.proof_url && (
 											<a
 												href={`${API_URL}${item.proof_url}`}

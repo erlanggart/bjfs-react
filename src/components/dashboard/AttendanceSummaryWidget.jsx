@@ -12,6 +12,8 @@ import {
 } from "react-icons/fi";
 import { Link } from "react-router-dom";
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+
 const AttendanceSummaryWidget = () => {
 	const currentYear = new Date().getFullYear();
 	const [sessionsByBranch, setSessionsByBranch] = useState({});
@@ -157,7 +159,7 @@ const AttendanceSummaryWidget = () => {
 												setExpandedSessionKey((prev) =>
 													prev === session.session_key
 														? null
-														: session.session_key
+														: session.session_key,
 												)
 											}
 											className="w-full flex justify-between items-center p-3 text-left hover:bg-gray-50"
@@ -165,7 +167,7 @@ const AttendanceSummaryWidget = () => {
 											<div>
 												<p className="font-bold text-gray-800">
 													{new Date(
-														session.attendance_date + "T00:00:00"
+														session.attendance_date + "T00:00:00",
 													).toLocaleDateString("id-ID", {
 														weekday: "long",
 														day: "numeric",
@@ -248,10 +250,11 @@ const AttendanceSummaryWidget = () => {
 																		>
 																			<img
 																				src={
-																					member.avatar ||
-																					`https://placehold.co/32x32/E0E0E0/757575?text=${member.full_name.charAt(
-																						0
-																					)}`
+																					member.avatar
+																						? `${API_BASE_URL}${member.avatar}`
+																						: `https://placehold.co/32x32/E0E0E0/757575?text=${member.full_name.charAt(
+																								0,
+																							)}`
 																				}
 																				alt={member.full_name}
 																				className="w-8 h-8 rounded-full object-cover"

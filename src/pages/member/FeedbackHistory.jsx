@@ -16,7 +16,7 @@ const FeedbackHistoryPage = () => {
 	useEffect(() => {
 		const fetchHistory = async () => {
 			try {
-				const response = await axios.get("/api/members/my_feedback.php");
+				const response = await axios.get("/api/members/my-feedback");
 				setHistory(Array.isArray(response.data) ? response.data : []);
 			} catch (error) {
 				console.error("Gagal memuat riwayat feedback", error);

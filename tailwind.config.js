@@ -5,7 +5,11 @@ export default {
 		"./src/**/*.{js,ts,jsx,tsx}", // Path ke semua file komponen React Anda
 	],
 	theme: {
-		extend: {},
+		extend: {
+			fontFamily: {
+				sans: ['League Spartan', 'sans-serif'],
+			},
+		},
 	},
 	plugins: [
 		require("@tailwindcss/typography"), // AKTIFKAN PLUGIN TYPOGRAPHY DI SINI
